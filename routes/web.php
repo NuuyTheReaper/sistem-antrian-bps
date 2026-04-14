@@ -49,7 +49,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         ->name('admin.dashboard');
 
     // Aksi manajemen antrian
-    Route::post('/antrian/panggil', [AntrianController::class, 'panggil'])
+    Route::post('/antrian/panggil/{keperluan}', [AntrianController::class, 'panggil'])
         ->name('admin.panggil');
 
     Route::post('/antrian/lewati/{id}', [AntrianController::class, 'lewati'])

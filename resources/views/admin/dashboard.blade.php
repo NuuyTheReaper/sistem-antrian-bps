@@ -80,59 +80,63 @@
         </div>
     </div>
 
-    {{-- Statistik Cards --}}
-    <div class="row g-3 mb-4">
-
-        {{-- Nomor Sedang Dipanggil --}}
-        <div class="col-6 col-lg-3">
-            <div class="card-glass stat-card" style="border-top: 3px solid var(--primary-light);">
-                <div class="stat-number" style="color: var(--primary-light);">
-                    {{ $sedangDipanggil ? $sedangDipanggil->nomor_antrian : '-' }}
+    {{-- Statistik & Kendali Loket --}}
+    <div class="row g-4 mb-4">
+        
+        {{-- Loket 1: Pengaduan --}}
+        <div class="col-12 col-md-6">
+            <div class="card-glass p-4 text-center h-100" style="border-top: 4px solid var(--primary-light);">
+                <h5 class="fw-bold mb-3 text-secondary">Loket 1 (Pengaduan)</h5>
+                <div class="stat-number mb-3" style="color: var(--primary-light); font-size: 3.5rem;">
+                    {{ $sedangDipanggilPengaduan ? $sedangDipanggilPengaduan->kode_antrian : '-' }}
                 </div>
-                <div class="stat-label">Sedang Dipanggil</div>
+                <form action="{{ route('admin.panggil', 'Pengaduan') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-gradient px-4 py-2 w-100 fw-bold">
+                        <i class="bi bi-megaphone-fill me-2"></i> Panggil Pengaduan
+                    </button>
+                </form>
             </div>
         </div>
 
-        {{-- Total Menunggu --}}
-        <div class="col-6 col-lg-3">
-            <div class="card-glass stat-card" style="border-top: 3px solid var(--accent);">
-                <div class="stat-number" style="color: var(--accent);">
-                    {{ $totalMenunggu }}
+        {{-- Loket 2: Konsultasi --}}
+        <div class="col-12 col-md-6">
+            <div class="card-glass p-4 text-center h-100" style="border-top: 4px solid var(--accent);">
+                <h5 class="fw-bold mb-3 text-secondary">Loket 2 (Konsultasi)</h5>
+                <div class="stat-number mb-3" style="color: var(--accent); font-size: 3.5rem;">
+                    {{ $sedangDipanggilKonsultasi ? $sedangDipanggilKonsultasi->kode_antrian : '-' }}
                 </div>
-                <div class="stat-label">Menunggu</div>
+                <form action="{{ route('admin.panggil', 'Konsultasi') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-gradient-warm px-4 py-2 w-100 fw-bold">
+                        <i class="bi bi-megaphone-fill me-2"></i> Panggil Konsultasi
+                    </button>
+                </form>
             </div>
         </div>
 
-        {{-- Total Selesai --}}
-        <div class="col-6 col-lg-3">
-            <div class="card-glass stat-card" style="border-top: 3px solid var(--success);">
-                <div class="stat-number" style="color: var(--success);">
-                    {{ $totalSelesai }}
-                </div>
-                <div class="stat-label">Selesai</div>
-            </div>
-        </div>
-
-        {{-- Total Dilewati --}}
-        <div class="col-6 col-lg-3">
-            <div class="card-glass stat-card" style="border-top: 3px solid var(--danger);">
-                <div class="stat-number" style="color: var(--danger);">
-                    {{ $totalDilewati }}
-                </div>
-                <div class="stat-label">Dilewati</div>
-            </div>
-        </div>
     </div>
 
-    {{-- Tombol Panggil Berikutnya --}}
-    <div class="text-center mb-4">
-        <form action="{{ route('admin.panggil') }}" method="POST" class="d-inline">
-            @csrf
-            <button type="submit" class="btn btn-gradient px-5 py-3" style="font-size: 1.1rem;">
-                <i class="bi bi-megaphone-fill me-2"></i>
-                Panggil Antrian Berikutnya
-            </button>
-        </form>
+    {{-- Rekap Harian --}}
+    <div class="row g-3 mb-4">
+        <div class="col-4">
+            <div class="card-glass p-3 text-center">
+                <div class="fw-bold" style="color: var(--accent); font-size: 1.5rem;">{{ $totalMenunggu }}</div>
+                <small class="text-secondary">Menunggu</small>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card-glass p-3 text-center">
+                <div class="fw-bold" style="color: var(--success); font-size: 1.5rem;">{{ $totalSelesai }}</div>
+                <small class="text-secondary">Selesai</small>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card-glass p-3 text-center">
+                <div class="fw-bold" style="color: var(--danger); font-size: 1.5rem;">{{ $totalDilewati }}</div>
+                <small class="text-secondary">Dilewati</small>
+            </div>
+        </div>
     </div>
 
     {{-- ═══════════════════════════════════════════════════════════
@@ -189,7 +193,7 @@
                             style="{{ $item->status === 'dipanggil' ? 'background: rgba(79,70,229,0.08);' : '' }}">
 
                             <td class="text-center fw-bold" style="font-size: 1.1rem;">
-                                {{ $item->nomor_antrian }}
+                                {{ $item->kode_antrian }}
                             </td>
 
                             <td>

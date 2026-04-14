@@ -35,7 +35,7 @@ class AntrianController extends Controller
         ]);
 
         $antrian = Antrian::create([
-            'nomor_antrian'   => Antrian::nomorBerikutnya(),
+            'nomor_antrian'   => Antrian::nomorBerikutnya($validated['keperluan']),
             'nama'            => $validated['nama'],
             'alamat'          => $validated['alamat'],
             'keperluan'       => $validated['keperluan'],
@@ -66,14 +66,14 @@ class AntrianController extends Controller
     {
         $antrian = Antrian::findOrFail($id);
 
-        $sedangDipanggil = Antrian::sedangDipanggil();
-        $sisaAntrian     = Antrian::sisaAntrianDidepan($antrian->nomor_antrian);
-        $estimasiMenit   = Antrian::estimasiWaktuTunggu($antrian->nomor_antrian);
+        $sedangDipanggil = Antrian::sedangDipanggil($antrian->keperluan);
+        $sisaAntrian     = Antrian::sisaAntrianDidepan($antrian->nomor_antrian, $antrian->keperluan);
+        $estimasiMenit   = Antrian::estimasiWaktuTunggu($antrian->nomor_antrian, $antrian->keperluan);
 
         return response()->json([
-            'nomor_antrian'    => $antrian->nomor_antrian,
+            'kode_antrian'     => $antrian->kode_antrian,
             'status'           => $antrian->status,
-            'sedang_dipanggil' => $sedangDipanggil ? $sedangDipanggil->nomor_antrian : '-',
+            'sedang_dipanggil' => $sedangDipanggil ? $sedangDipanggil->kode_antrian : '-',
             'sisa_antrian'     => $sisaAntrian,
             'estimasi_menit'   => $estimasiMenit,
             'keperluan'        => $antrian->keperluan,
@@ -91,10 +91,12 @@ class AntrianController extends Controller
     public function dashboard()
     {
         $antrians = Antrian::hariIni()
+            ->orderBy('keperluan', 'asc')
             ->orderBy('nomor_antrian', 'asc')
             ->get();
 
-        $sedangDipanggil = Antrian::sedangDipanggil();
+        $sedangDipanggilPengaduan  = Antrian::sedangDipanggil('Pengaduan');
+        $sedangDipanggilKonsultasi = Antrian::sedangDipanggil('Konsultasi');
 
         $totalMenunggu = Antrian::hariIni()->status('menunggu')->count();
         $totalSelesai  = Antrian::hariIni()->status('selesai')->count();
@@ -102,7 +104,8 @@ class AntrianController extends Controller
 
         return view('admin.dashboard', compact(
             'antrians',
-            'sedangDipanggil',
+            'sedangDipanggilPengaduan',
+            'sedangDipanggilKonsultasi',
             'totalMenunggu',
             'totalSelesai',
             'totalDilewati'
@@ -110,21 +113,23 @@ class AntrianController extends Controller
     }
 
     /**
-     * UPDATE — Panggil antrian berikutnya (status → dipanggil).
-     * POST /admin/antrian/panggil
+     * UPDATE — Panggil antrian berikutnya per keperluan (status → dipanggil).
+     * POST /admin/antrian/panggil/{keperluan}
      */
-    public function panggil()
+    public function panggil($keperluan)
     {
-        // Set antrian yang sedang dipanggil menjadi selesai terlebih dahulu
+        // Set antrian yang sedang dipanggil di jalur loket tersebut menjadi selesai
         Antrian::hariIni()
+            ->keperluan($keperluan)
             ->status('dipanggil')
             ->update([
                 'status'        => 'selesai',
                 'waktu_selesai' => Carbon::now(),
             ]);
 
-        // Ambil antrian menunggu berikutnya (urutan terkecil)
+        // Ambil antrian menunggu berikutnya (urutan terkecil) di jalur loket tersebut
         $berikutnya = Antrian::hariIni()
+            ->keperluan($keperluan)
             ->status('menunggu')
             ->orderBy('nomor_antrian', 'asc')
             ->first();
@@ -136,11 +141,11 @@ class AntrianController extends Controller
             ]);
 
             return redirect()->route('admin.dashboard')
-                ->with('sukses', "Antrian nomor {$berikutnya->nomor_antrian} dipanggil.");
+                ->with('sukses', "Antrian {$berikutnya->kode_antrian} dipanggil di loket {$keperluan}.");
         }
 
         return redirect()->route('admin.dashboard')
-            ->with('info', 'Tidak ada antrian yang menunggu.');
+            ->with('info', "Tidak ada antrian yang menunggu untuk {$keperluan}.");
     }
 
     /**
@@ -155,7 +160,7 @@ class AntrianController extends Controller
         ]);
 
         return redirect()->route('admin.dashboard')
-            ->with('sukses', "Antrian nomor {$antrian->nomor_antrian} dilewati.");
+            ->with('sukses', "Antrian {$antrian->kode_antrian} dilewati.");
     }
 
     /**
@@ -171,7 +176,7 @@ class AntrianController extends Controller
         ]);
 
         return redirect()->route('admin.dashboard')
-            ->with('sukses', "Antrian nomor {$antrian->nomor_antrian} selesai dilayani.");
+            ->with('sukses', "Antrian {$antrian->kode_antrian} selesai dilayani.");
     }
 
     /**
@@ -197,7 +202,7 @@ class AntrianController extends Controller
         ]);
 
         $antrian = Antrian::create([
-            'nomor_antrian'   => Antrian::nomorBerikutnya(),
+            'nomor_antrian'   => Antrian::nomorBerikutnya($validated['keperluan']),
             'nama'            => $validated['nama'],
             'alamat'          => $validated['alamat'],
             'keperluan'       => $validated['keperluan'],
@@ -207,7 +212,7 @@ class AntrianController extends Controller
         ]);
 
         return redirect()->route('admin.dashboard')
-            ->with('sukses', "Pengunjung {$antrian->nama} terdaftar dengan nomor antrian {$antrian->nomor_antrian}.");
+            ->with('sukses', "Pengunjung {$antrian->nama} terdaftar dengan nomor antrian {$antrian->kode_antrian}.");
     }
 
     /**
@@ -235,14 +240,16 @@ class AntrianController extends Controller
             ->orderBy('nomor_antrian', 'asc')
             ->get();
 
-        $sedangDipanggil = Antrian::sedangDipanggil();
+        $sedangDipanggilPengaduan  = Antrian::sedangDipanggil('Pengaduan');
+        $sedangDipanggilKonsultasi = Antrian::sedangDipanggil('Konsultasi');
 
         return response()->json([
-            'antrians'         => $antrians,
-            'sedang_dipanggil' => $sedangDipanggil ? $sedangDipanggil->nomor_antrian : '-',
-            'total_menunggu'   => Antrian::hariIni()->status('menunggu')->count(),
-            'total_selesai'    => Antrian::hariIni()->status('selesai')->count(),
-            'total_dilewati'   => Antrian::hariIni()->status('dilewati')->count(),
+            'antrians'                   => $antrians,
+            'sedang_dipanggil_pengaduan' => $sedangDipanggilPengaduan ? $sedangDipanggilPengaduan->kode_antrian : '-',
+            'sedang_dipanggil_konsultasi'=> $sedangDipanggilKonsultasi ? $sedangDipanggilKonsultasi->kode_antrian : '-',
+            'total_menunggu'             => Antrian::hariIni()->status('menunggu')->count(),
+            'total_selesai'              => Antrian::hariIni()->status('selesai')->count(),
+            'total_dilewati'             => Antrian::hariIni()->status('dilewati')->count(),
         ]);
     }
 

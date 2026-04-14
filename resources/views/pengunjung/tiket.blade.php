@@ -208,7 +208,7 @@
                 <div class="text-center mb-2">
                     <p class="text-secondary mb-2" style="font-size: 0.85rem; font-weight: 500;">Nomor Antrian Anda</p>
                     <div class="nomor-antrian-display">
-                        <span class="nomor-antrian-value">{{ $antrian->nomor_antrian }}</span>
+                        <span class="nomor-antrian-value">{{ $antrian->kode_antrian }}</span>
                     </div>
                     <p class="mt-3 mb-0 fw-semibold" style="font-size: 1.1rem;">{{ $antrian->nama }}</p>
                 </div>
@@ -226,7 +226,7 @@
                     {{-- 2. Nomor Antrian Anda --}}
                     <div class="info-item">
                         <span class="info-icon"><i class="bi bi-ticket-detailed-fill text-secondary"></i></span>
-                        <div class="info-value" style="color: var(--secondary);">{{ $antrian->nomor_antrian }}</div>
+                        <div class="info-value" style="color: var(--secondary);">{{ $antrian->kode_antrian }}</div>
                         <div class="info-label">Nomor Anda</div>
                     </div>
 
@@ -476,7 +476,7 @@
                 'dipanggil': {
                     class: 'status-dipanggil',
                     icon: 'bi-megaphone-fill',
-                    text: '🔔 GILIRAN ANDA! Silakan menuju loket pelayanan'
+                    text: 'GILIRAN ANDA! Silakan menuju loket pelayanan'
                 },
                 'selesai': {
                     class: 'status-selesai',

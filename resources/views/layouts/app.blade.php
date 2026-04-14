@@ -153,6 +153,35 @@
             left: 100%;
         }
 
+        .btn-gradient-warm {
+            background: var(--gradient-warm);
+            border: none;
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .btn-gradient-warm::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.5s ease;
+        }
+        .btn-gradient-warm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+            color: white;
+        }
+        .btn-gradient-warm:hover::before {
+            left: 100%;
+        }
+
         /* Override outline-light untk tema cerah */
         .btn-outline-light {
             color: var(--primary) !important;

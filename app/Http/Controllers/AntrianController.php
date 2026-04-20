@@ -350,8 +350,7 @@ class AntrianController extends Controller
             ->where('status', 'selesai')
             ->whereNotNull('waktu_dipanggil')
             ->whereNotNull('waktu_selesai')
-            ->selectRaw("AVG(TIMESTAMPDIFF(MINUTE, waktu_dipanggil, waktu_selesai)) as avg_menit")
-            ->value('avg_menit');
+            ->selectRaw("AVG(TIMESTAMPDIFF(MINUTE, waktu_dipanggil, waktu_selesai)) as avg_menit")->value('avg_menit');
 
         return response()->json([
             'labels'           => $labels,

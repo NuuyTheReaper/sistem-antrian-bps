@@ -29,6 +29,8 @@ class Antrian extends Model
         'waktu_selesai'    => 'datetime',
     ];
 
+    protected $appends = ['kode_antrian'];
+
     // ─── Aksesoris Data ──────────────────────────────────────
 
     /**

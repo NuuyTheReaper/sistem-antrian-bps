@@ -302,6 +302,7 @@
                 const buffer = audioCtx.createBuffer(1, 1, 22050);
                 const source = audioCtx.createBufferSource();
                 source.buffer = buffer;
+                source.loop = true; // Loop audio kosong agar browser tetap hidup di background
                 source.connect(audioCtx.destination);
                 source.start(0);
                 audioUnlocked = true;
@@ -523,15 +524,10 @@
         fetchStatus();
         let pollingTimer = setInterval(fetchStatus, INTERVAL);
 
+        // Mencegah timer terhenti saat browser di-minimize / pindah tab
         document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                clearInterval(pollingTimer);
-                pollingTimer = null;
-            } else {
+            if (!document.hidden) {
                 fetchStatus();
-                if (!pollingTimer) {
-                    pollingTimer = setInterval(fetchStatus, INTERVAL);
-                }
             }
         });
 

@@ -87,7 +87,7 @@
         <div class="col-12 col-md-6">
             <div class="card-glass p-4 text-center h-100" style="border-top: 4px solid var(--primary-light);">
                 <h5 class="fw-bold mb-3 text-secondary">Loket 1 (Pengaduan)</h5>
-                <div class="stat-number mb-3" style="color: var(--primary-light); font-size: 3.5rem;">
+                <div class="stat-number mb-3" id="statPengaduan" style="color: var(--primary-light); font-size: 3.5rem;">
                     {{ $sedangDipanggilPengaduan ? $sedangDipanggilPengaduan->kode_antrian : '-' }}
                 </div>
                 <form action="{{ route('admin.panggil', 'Pengaduan') }}" method="POST">
@@ -103,7 +103,7 @@
         <div class="col-12 col-md-6">
             <div class="card-glass p-4 text-center h-100" style="border-top: 4px solid var(--accent);">
                 <h5 class="fw-bold mb-3 text-secondary">Loket 2 (Konsultasi)</h5>
-                <div class="stat-number mb-3" style="color: var(--accent); font-size: 3.5rem;">
+                <div class="stat-number mb-3" id="statKonsultasi" style="color: var(--accent); font-size: 3.5rem;">
                     {{ $sedangDipanggilKonsultasi ? $sedangDipanggilKonsultasi->kode_antrian : '-' }}
                 </div>
                 <form action="{{ route('admin.panggil', 'Konsultasi') }}" method="POST">
@@ -121,19 +121,19 @@
     <div class="row g-3 mb-4">
         <div class="col-4">
             <div class="card-glass p-3 text-center">
-                <div class="fw-bold" style="color: var(--accent); font-size: 1.5rem;">{{ $totalMenunggu }}</div>
+                <div class="fw-bold" id="totalMenunggu" style="color: var(--accent); font-size: 1.5rem;">{{ $totalMenunggu }}</div>
                 <small class="text-secondary">Menunggu</small>
             </div>
         </div>
         <div class="col-4">
             <div class="card-glass p-3 text-center">
-                <div class="fw-bold" style="color: var(--success); font-size: 1.5rem;">{{ $totalSelesai }}</div>
+                <div class="fw-bold" id="totalSelesai" style="color: var(--success); font-size: 1.5rem;">{{ $totalSelesai }}</div>
                 <small class="text-secondary">Selesai</small>
             </div>
         </div>
         <div class="col-4">
             <div class="card-glass p-3 text-center">
-                <div class="fw-bold" style="color: var(--danger); font-size: 1.5rem;">{{ $totalDilewati }}</div>
+                <div class="fw-bold" id="totalDilewati" style="color: var(--danger); font-size: 1.5rem;">{{ $totalDilewati }}</div>
                 <small class="text-secondary">Dilewati</small>
             </div>
         </div>
@@ -170,7 +170,7 @@
                 <i class="bi bi-list-ol me-2" style="color: var(--secondary);"></i>
                 Daftar Antrian Hari Ini
             </h5>
-            <span class="badge rounded-pill px-3 py-2" style="background: var(--dark-surface); color: var(--text-secondary);">
+            <span class="badge rounded-pill px-3 py-2" id="totalBadge" style="background: var(--dark-surface); color: var(--text-secondary);">
                 {{ $antrians->count() }} pengunjung
             </span>
         </div>
@@ -187,7 +187,7 @@
                         <th class="text-center" style="width: 220px;">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tableAntrianBody">
                     @forelse($antrians as $item)
                         <tr class="{{ $item->status === 'dipanggil' ? 'table-active' : '' }}"
                             style="{{ $item->status === 'dipanggil' ? 'background: rgba(79,70,229,0.08);' : '' }}">
@@ -365,5 +365,77 @@
             printWindow.close();
         }, 500);
     }
+</script>
+<script>
+    // ═══════════════════════════════════════════════════════════
+    //  AJAX POLLING — REFRESH OTOMATIS DATA DASHBOARD
+    // ═══════════════════════════════════════════════════════════
+    setInterval(function() {
+        fetch('{{ route("api.admin.data") }}')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('statPengaduan').textContent = data.sedang_dipanggil_pengaduan;
+                document.getElementById('statKonsultasi').textContent = data.sedang_dipanggil_konsultasi;
+                document.getElementById('totalMenunggu').textContent = data.total_menunggu;
+                document.getElementById('totalSelesai').textContent = data.total_selesai;
+                document.getElementById('totalDilewati').textContent = data.total_dilewati;
+                document.getElementById('totalBadge').textContent = data.antrians.length + ' pengunjung';
+                
+                let tbody = document.getElementById('tableAntrianBody');
+                if (!tbody) return;
+                
+                if (data.antrians.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5"><i class="bi bi-inbox fs-1 text-secondary d-block mb-2"></i><span class="text-secondary">Belum ada antrian hari ini</span></td></tr>`;
+                    return;
+                }
+                
+                let html = '';
+                const csrf = document.querySelector('meta[name="csrf-token"]').content;
+                data.antrians.forEach(item => {
+                    const rowClass = item.status === 'dipanggil' ? 'table-active' : '';
+                    const rowStyle = item.status === 'dipanggil' ? 'background: rgba(79,70,229,0.08);' : '';
+                    const kpColor = item.keperluan === 'Konsultasi' ? 'rgba(6,182,212,0.15)' : 'rgba(245,158,11,0.15)';
+                    const kpTextC = item.keperluan === 'Konsultasi' ? '#06b6d4' : '#f59e0b';
+                    const kpBord  = item.keperluan === 'Konsultasi' ? 'rgba(6,182,212,0.3)' : 'rgba(245,158,11,0.3)';
+                    const statusU = item.status.charAt(0).toUpperCase() + item.status.slice(1);
+                    
+                    let aksi = '';
+                    if(item.status === 'menunggu') {
+                        aksi = `<span class="text-secondary" style="font-size: 0.8rem;"><i class="bi bi-clock"></i> Menunggu giliran</span>`;
+                    } else if(item.status === 'dipanggil') {
+                        aksi = `
+                        <div class="d-flex gap-1 justify-content-center">
+                            <form action="/admin/antrian/lewati/${item.id}" method="POST" class="d-inline">
+                                <input type="hidden" name="_token" value="${csrf}">
+                                <button type="submit" class="btn btn-warning-custom btn-sm px-3" title="Lewati / Tunda"><i class="bi bi-skip-forward-fill me-1"></i> Skip</button>
+                            </form>
+                            <form action="/admin/antrian/selesai/${item.id}" method="POST" class="d-inline">
+                                <input type="hidden" name="_token" value="${csrf}">
+                                <button type="submit" class="btn btn-success-custom btn-sm px-3" title="Selesai dilayani"><i class="bi bi-check-lg me-1"></i> Selesai</button>
+                            </form>
+                        </div>`;
+                    } else if(item.status === 'selesai') {
+                        aksi = `<span class="text-success" style="font-size: 0.8rem;"><i class="bi bi-check-circle-fill"></i> Selesai</span>`;
+                    } else if(item.status === 'dilewati') {
+                        aksi = `<span class="text-danger" style="font-size: 0.8rem;"><i class="bi bi-skip-forward-circle"></i> Dilewati</span>`;
+                    }
+                    
+                    let addr = item.alamat;
+                    if(addr && addr.length > 40) addr = addr.substring(0, 40) + '...';
+                    
+                    html += `
+                        <tr class="${rowClass}" style="${rowStyle}">
+                            <td class="text-center fw-bold" style="font-size: 1.1rem;">${item.kode_antrian}</td>
+                            <td><div class="fw-semibold">${item.nama}</div><small class="text-secondary" style="font-size: 0.75rem;">${addr}</small></td>
+                            <td><span class="badge rounded-pill px-2 py-1" style="background: ${kpColor}; color: ${kpTextC}; border: 1px solid ${kpBord}; font-size: 0.75rem;">${item.keperluan}</span></td>
+                            <td style="font-size: 0.9rem;">${item.nomor_hp}</td>
+                            <td class="text-center"><span class="badge-status badge-${item.status}">${statusU}</span></td>
+                            <td class="text-center">${aksi}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            }).catch(e => console.log('Polling init fail: ', e));
+    }, 4000);
 </script>
 @endpush

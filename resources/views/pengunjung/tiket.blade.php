@@ -9,269 +9,295 @@
 
 @push('styles')
 <style>
-    /* ─── Tiket Number Display ─────────────────────────── */
-    .nomor-antrian-display {
-        width: 140px;
-        height: 140px;
+    .container-app {
+        max-width: 500px;
+        margin: 0 auto;
+        padding-bottom: 24px;
+    }
+
+    /* ─── Ticket Card (same structure as daftar.blade.php) ─── */
+    .ticket-card {
+        background: var(--app-surface);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+    .ticket-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        padding: 30px 24px 40px;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    .ticket-header::after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: -15px;
+        width: 30px;
+        height: 30px;
+        background: var(--app-bg);
         border-radius: 50%;
+    }
+    .ticket-header::before {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        right: -15px;
+        width: 30px;
+        height: 30px;
+        background: var(--app-bg);
+        border-radius: 50%;
+    }
+    .ticket-body {
+        padding: 30px 24px 24px;
+        background: white;
+        position: relative;
+        overflow: hidden;
+    }
+    .ticket-icon-bg {
+        position: absolute;
+        right: -20px;
+        bottom: -20px;
+        font-size: 6rem;
+        opacity: 0.03;
+        transform: rotate(-15deg);
+        color: var(--primary);
+        pointer-events: none;
+    }
+
+    /* ─── Hero Icon (matching daftar.blade.php) ─── */
+    .hero-icon {
+        width: 72px;
+        height: 72px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--gradient-primary);
-        margin: 0 auto;
-        box-shadow: 0 0 50px rgba(79, 70, 229, 0.3);
-        position: relative;
+        margin: 0 auto 16px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transform: rotate(-5deg);
     }
-    .nomor-antrian-display::before {
-        content: '';
-        position: absolute;
-        width: 160px; height: 160px;
-        border-radius: 50%;
-        border: 2px solid rgba(79, 70, 229, 0.3);
-        animation: pulse-ring-outer 2s ease-in-out infinite;
-    }
-    @keyframes pulse-ring-outer {
-        0%, 100% { transform: scale(1); opacity: 0.5; }
-        50% { transform: scale(1.1); opacity: 0; }
-    }
-    .nomor-antrian-value {
-        font-size: 3.5rem;
+
+    /* ─── Queue Number ─── */
+    .queue-number {
+        font-size: 5rem;
         font-weight: 900;
-        color: white;
         line-height: 1;
+        letter-spacing: -2px;
     }
 
-    /* ─── Info Grid ────────────────────────────────────── */
-    .info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+    /* ─── Info Row ─── */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 0;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .info-row .info-left {
+        display: flex;
+        align-items: center;
         gap: 12px;
-        margin-top: 1.5rem;
     }
-    .info-item {
-        background: var(--dark-card);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-sm);
-        padding: 1.25rem 1rem;
-        text-align: center;
-        transition: all 0.5s ease;
+    .info-row .info-left .info-icon-sm {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
     }
-    .info-item .info-icon {
-        font-size: 1.5rem;
-        margin-bottom: 8px;
-        display: block;
+    .info-row .info-left .info-text {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-muted);
     }
-    .info-item .info-value {
-        font-size: 1.75rem;
+    .info-row .info-right {
+        font-size: 1.15rem;
         font-weight: 800;
-        line-height: 1.2;
-        margin-bottom: 2px;
-    }
-    .info-item .info-label {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        color: var(--text-secondary);
-        font-weight: 600;
+        transition: all 0.3s ease;
     }
 
-    /* ─── Status Banner ────────────────────────────────── */
+    /* ─── Status Banner ─── */
     .status-banner {
-        border-radius: var(--radius-sm);
-        padding: 1rem;
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
         text-align: center;
-        margin-top: 1.5rem;
-        font-weight: 700;
-        font-size: 1rem;
-        transition: all 0.5s ease;
+        margin-top: 20px;
+        transition: all 0.4s ease;
     }
     .status-menunggu {
-        background: rgba(245, 158, 11, 0.1);
-        border: 1px solid rgba(245, 158, 11, 0.3);
-        color: #fbbf24;
+        background: #FEF3C7;
+        color: #D97706;
     }
     .status-dipanggil {
-        background: rgba(79, 70, 229, 0.15);
-        border: 1px solid rgba(79, 70, 229, 0.4);
-        color: #a5b4fc;
-        animation: pulse-ring 1.5s ease-in-out infinite;
+        background: #E0E7FF;
+        color: #4338CA;
+        animation: pulse-ring 2s infinite;
     }
     .status-selesai {
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        color: #6ee7b7;
+        background: #D1FAE5;
+        color: #059669;
     }
     .status-dilewati {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        color: #fca5a5;
+        background: #FEE2E2;
+        color: #DC2626;
     }
 
-    /* ─── Tombol Antrian Baru ──────────────────────────── */
-    .btn-antrian-baru {
-        display: none;
-        margin-top: 1.25rem;
-        padding: 0.9rem 1.5rem;
-        border: none;
-        border-radius: var(--radius-sm);
-        background: var(--gradient-primary);
-        color: white;
-        font-weight: 700;
-        font-size: 1rem;
-        width: 100%;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
-    }
-    .btn-antrian-baru:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 30px rgba(79, 70, 229, 0.45);
-        color: white;
-    }
-    .btn-antrian-baru.show {
-        display: block;
-        animation: fadeSlideUp 0.5s ease forwards;
-    }
-    @keyframes fadeSlideUp {
-        from { opacity: 0; transform: translateY(15px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ─── Live Indicator ───────────────────────────────── */
-    .live-indicator {
+    /* ─── Audio Banner ─── */
+    .audio-pill {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--success);
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 30px;
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: var(--shadow-sm);
     }
-    .live-dot {
-        width: 8px; height: 8px;
-        background: var(--success);
-        border-radius: 50%;
-        animation: blink 1.5s ease-in-out infinite;
-    }
-    @keyframes blink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.3; }
+    .audio-pill:hover {
+        border-color: var(--primary-light);
+        color: var(--primary);
     }
 
-    /* ─── Highlight transition ─────────────────────────── */
+    /* ─── Value Change Animation ─── */
     .value-changed {
-        animation: highlight 1s ease;
+        animation: val-pop 0.4s ease;
     }
-    @keyframes highlight {
-        0% { transform: scale(1.15); color: #4f46e5; }
+    @keyframes val-pop {
+        0% { transform: scale(1.2); }
         100% { transform: scale(1); }
+    }
+
+    /* ─── Fade Slide ─── */
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 </style>
 @endpush
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-lg-5 col-md-7">
+<div class="container container-app">
 
-            {{-- Live Indicator --}}
-            <div class="text-center mb-2">
-                <span class="live-indicator">
-                    <span class="live-dot"></span>
-                    Live — Update Otomatis
+    {{-- Audio Permission Pill --}}
+    <div class="text-center mb-3">
+        <div class="audio-pill" id="audioBanner" onclick="unlockAudio()">
+            <i class="bi bi-bell-slash text-danger"></i>
+            <span>Ketuk untuk aktifkan suara notifikasi</span>
+        </div>
+    </div>
+
+    {{-- Main Ticket Card --}}
+    <div class="ticket-card" id="tiketCard">
+
+        {{-- Header --}}
+        <div class="ticket-header">
+            <div class="hero-icon">
+                <i class="bi bi-ticket-perforated text-white" style="font-size: 2.2rem;"></i>
+            </div>
+
+            <p style="font-size: 0.75rem; letter-spacing: 2px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; opacity: 0.85;">Nomor Antrian Anda</p>
+            <h1 class="queue-number mb-0">{{ $antrian->kode_antrian }}</h1>
+
+            <hr style="border-top: 2px dashed rgba(255,255,255,0.25); opacity: 1; margin: 24px 0 20px;">
+
+            <div class="d-flex justify-content-between text-start" style="padding: 0 4px;">
+                <div>
+                    <div style="font-size: 0.7rem; letter-spacing: 1.5px; font-weight: 600; text-transform: uppercase; opacity: 0.7; margin-bottom: 4px;">Nama</div>
+                    <div style="font-weight: 800; font-size: 1.1rem;">{{ $antrian->nama }}</div>
+                </div>
+                <div class="text-end">
+                    <div style="font-size: 0.7rem; letter-spacing: 1.5px; font-weight: 600; text-transform: uppercase; opacity: 0.7; margin-bottom: 4px;">Layanan</div>
+                    <div style="font-weight: 800; font-size: 1.1rem;">{{ $antrian->keperluan }}</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Body --}}
+        <div class="ticket-body">
+            <i class="bi bi-people ticket-icon-bg"></i>
+
+            {{-- Info Rows --}}
+            <div class="info-row">
+                <div class="info-left">
+                    <div class="info-icon-sm" style="background: #EEF2FF; color: var(--primary);">
+                        <i class="bi bi-megaphone-fill"></i>
+                    </div>
+                    <span class="info-text">Sedang Dipanggil</span>
+                </div>
+                <div class="info-right" id="sedangDipanggil" style="color: var(--primary);">-</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-left">
+                    <div class="info-icon-sm" style="background: #FEF3C7; color: #D97706;">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <span class="info-text">Sisa Antrian</span>
+                </div>
+                <div class="info-right" id="sisaAntrian" style="color: #D97706;">...</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-left">
+                    <div class="info-icon-sm" style="background: #D1FAE5; color: #059669;">
+                        <i class="bi bi-stopwatch-fill"></i>
+                    </div>
+                    <span class="info-text">Estimasi Waktu</span>
+                </div>
+                <div class="info-right" id="estimasiWaktu" style="color: #059669;">...</div>
+            </div>
+
+            {{-- Progress Bar --}}
+            <div class="mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Progres Antrian</span>
+                    <span id="progressLabel" style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">0 / 0</span>
+                </div>
+                <div style="height: 8px; background: #F1F5F9; border-radius: 10px; overflow: hidden;">
+                    <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 10px; transition: width 0.6s ease;"></div>
+                </div>
+            </div>
+
+            {{-- Status Banner --}}
+            <div class="status-banner status-menunggu" id="statusBanner">
+                <span class="fw-bold" id="statusText" style="font-size: 0.9rem;">
+                    <i class="bi bi-arrow-repeat me-1"></i>
+                    Menghubungkan...
                 </span>
             </div>
 
-            {{-- Notification Status --}}
-            <div class="text-center mb-3">
-                <div class="audio-banner" id="audioBanner" onclick="unlockAudio()" style="cursor: pointer;">
-                    <i class="bi bi-bell-slash me-1"></i> Notifikasi suara belum aktif
-                    <small class="d-block mt-1" style="opacity: 0.8; font-weight: normal;">Ketuk area ini untuk mengizinkan suara</small>
-                </div>
-            </div>
-
-            {{-- Main Ticket Card --}}
-            <div class="card-glass p-4" id="tiketCard">
-
-                {{-- Keperluan Badge --}}
-                <div class="text-center mb-3">
-                    <div class="badge bg-light text-dark px-3 py-2 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center">
-                        <i class="bi bi-tag-fill me-2" style="color: var(--primary);"></i>
-                        {{ $antrian->keperluan }}
-                    </div>
-                </div>
-
-                {{-- Nomor Antrian Besar --}}
-                <div class="text-center mb-2">
-                    <p class="text-secondary mb-2" style="font-size: 0.85rem; font-weight: 500;">Nomor Antrian Anda</p>
-                    <div class="nomor-antrian-display">
-                        <span class="nomor-antrian-value">{{ $antrian->kode_antrian }}</span>
-                    </div>
-                    <p class="mt-3 mb-0 fw-semibold" style="font-size: 1.1rem;">{{ $antrian->nama }}</p>
-                </div>
-
-                {{-- 4 Info Boxes (Real-time via AJAX) --}}
-                <div class="info-grid">
-
-                    {{-- 1. Nomor Sedang Dipanggil --}}
-                    <div class="info-item">
-                        <span class="info-icon"><i class="bi bi-megaphone-fill text-primary"></i></span>
-                        <div class="info-value" id="sedangDipanggil" style="color: var(--primary-light);">-</div>
-                        <div class="info-label">Sedang Dipanggil</div>
-                    </div>
-
-                    {{-- 2. Nomor Antrian Anda --}}
-                    <div class="info-item">
-                        <span class="info-icon"><i class="bi bi-ticket-detailed-fill text-secondary"></i></span>
-                        <div class="info-value" style="color: var(--secondary);">{{ $antrian->kode_antrian }}</div>
-                        <div class="info-label">Nomor Anda</div>
-                    </div>
-
-                    {{-- 3. Sisa Antrian --}}
-                    <div class="info-item">
-                        <span class="info-icon"><i class="bi bi-people-fill text-danger"></i></span>
-                        <div class="info-value" id="sisaAntrian" style="color: var(--accent);">...</div>
-                        <div class="info-label">Sisa Antrian</div>
-                    </div>
-
-                    {{-- 4. Estimasi Waktu --}}
-                    <div class="info-item">
-                        <span class="info-icon"><i class="bi bi-stopwatch-fill text-success"></i></span>
-                        <div class="info-value" id="estimasiWaktu" style="color: var(--success);">...</div>
-                        <div class="info-label">Estimasi (Menit)</div>
-                    </div>
-
-                </div>
-
-                {{-- Status Banner --}}
-                <div class="status-banner status-menunggu" id="statusBanner">
-                    <h5 class="mb-0 fw-bold" id="statusText">
-                        <i class="bi bi-plus-circle-fill me-2"></i>
-                        Menghubungkan ke server...
-                    </h5>
-                </div>
-
-                {{-- Tombol Ambil Antrian Baru (muncul saat selesai/dilewati) --}}
-                <a href="#" class="btn-antrian-baru" id="btnAntrianBaru" style="display: none;" onclick="ambilAntrianBaru(event)">
-                    <i class="bi bi-plus-circle-fill me-2"></i>
-                    Ambil Nomor Antrian Baru
-                </a>
-
-            </div>
-
-            {{-- Footer Note --}}
-            <div class="text-center mt-3">
-                <small class="text-secondary">
-                    <i class="bi bi-arrow-repeat me-1"></i>
-                    Halaman ini update otomatis setiap 5 detik
-                </small>
-            </div>
-
+            {{-- Tombol Ambil Antrian Baru --}}
+            <a href="#" class="btn-app w-100 mt-3" id="btnAntrianBaru" onclick="ambilAntrianBaru(event)" style="display: none; text-decoration: none;">
+                <span>Ambil Antrian Baru</span>
+                <i class="bi bi-arrow-right fs-5"></i>
+            </a>
         </div>
     </div>
+
+    {{-- Footer --}}
+    <div class="text-center mt-4">
+        <small class="text-muted" style="font-weight: 500;">
+            <i class="bi bi-shield-check me-1 text-success"></i>
+            Data Anda aman dan terenkripsi
+        </small>
+    </div>
+
 </div>
 @endsection
 
@@ -279,8 +305,9 @@
 <script>
     /**
      * ═══════════════════════════════════════════════════════════
-     *  NOTIFIKASI SUARA — Web Audio API
-     *  Generate beep tone secara programmatic (tanpa file audio)
+     *  NOTIFIKASI SUARA — TTS + Web Audio API Ringtone
+     *  1. Mengucapkan "Nomor antrian K-024, silakan menuju loket"
+     *  2. Setelah TTS selesai → dering otomatis 15 detik
      * ═══════════════════════════════════════════════════════════
      */
     const NotifikasiSuara = (function() {
@@ -294,7 +321,6 @@
             if (audioUnlocked) return;
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                // Resume context jika suspended
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
@@ -302,22 +328,21 @@
                 const buffer = audioCtx.createBuffer(1, 1, 22050);
                 const source = audioCtx.createBufferSource();
                 source.buffer = buffer;
-                source.loop = true; // Loop audio kosong agar browser tetap hidup di background
+                source.loop = true;
                 source.connect(audioCtx.destination);
                 source.start(0);
                 audioUnlocked = true;
 
-                // Sembunyikan banner
+                // Update banner UI
                 const banner = document.getElementById('audioBanner');
                 if (banner) {
-                    banner.style.animation = 'fadeSlideUp 0.3s ease reverse forwards';
-                    setTimeout(() => banner.style.display = 'none', 300);
-                }
-                // Tampilkan status aktif
-                const statusEl = document.getElementById('notifStatus');
-                if (statusEl) {
-                    statusEl.innerHTML = '<i class="bi bi-bell-fill me-1"></i> Notifikasi Suara Aktif';
-                    statusEl.style.color = 'var(--success)';
+                    banner.innerHTML = '<i class="bi bi-bell-fill text-success"></i> <span>Notifikasi suara aktif</span>';
+                    banner.style.borderColor = '#A7F3D0';
+                    banner.style.background = '#ECFDF5';
+                    setTimeout(() => {
+                        banner.style.animation = 'fadeSlideUp 0.3s ease reverse forwards';
+                        setTimeout(() => banner.style.display = 'none', 300);
+                    }, 2000);
                 }
             } catch(e) {
                 console.warn('Audio unlock failed:', e);
@@ -325,17 +350,62 @@
         }
 
         /**
-         * Mainkan beep notification.
-         * Pattern: 2 nada bergantian (ding-dong) selama 20 detik
+         * Ucapkan nomor antrian menggunakan SpeechSynthesis API,
+         * lalu mainkan dering 15 detik setelah TTS selesai.
          */
-        function play() {
+        function announceAndRing(kodeAntrian) {
+            if (!audioCtx || !audioUnlocked) {
+                // Fallback: langsung dering tanpa TTS
+                playRingtone();
+                return;
+            }
+
+            // Coba TTS dulu
+            if ('speechSynthesis' in window) {
+                // Cancel any pending speech
+                window.speechSynthesis.cancel();
+
+                const teks = `Nomor antrian ${kodeAntrian.split('').join(' ')}, silakan menuju loket pelayanan`;
+                const utterance = new SpeechSynthesisUtterance(teks);
+                utterance.lang = 'id-ID';
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+
+                // Pilih voice Indonesia jika tersedia
+                const voices = window.speechSynthesis.getVoices();
+                const idVoice = voices.find(v => v.lang.startsWith('id'));
+                if (idVoice) utterance.voice = idVoice;
+
+                utterance.onend = function() {
+                    // Setelah TTS selesai → dering 15 detik
+                    setTimeout(() => playRingtone(), 500);
+                };
+                utterance.onerror = function() {
+                    // Fallback jika TTS gagal
+                    playRingtone();
+                };
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                // Browser tidak support TTS → langsung dering
+                playRingtone();
+            }
+        }
+
+        /**
+         * Mainkan nada dering 15 detik.
+         * Pattern: 2 nada bergantian (ding-dong)
+         */
+        function playRingtone() {
             if (!audioCtx || !audioUnlocked) return;
 
             const now = audioCtx.currentTime;
+            const DURASI_DETIK = 15;
             const pattern = [];
 
-            // 1 loop (2 nada) butuh 0.5 detik. Untuk 20 detik butuh 40 loop.
-            for (let i = 0; i < 40; i++) {
+            // 1 loop (2 nada) butuh 0.5 detik. Untuk 15 detik butuh 30 loop.
+            for (let i = 0; i < (DURASI_DETIK * 2); i++) {
                 const startOff = i * 0.5;
                 pattern.push({ freq: 880, start: startOff, duration: 0.15 });
                 pattern.push({ freq: 1100, start: startOff + 0.2, duration: 0.15 });
@@ -361,7 +431,7 @@
             });
         }
 
-        return { unlock, play, isUnlocked: () => audioUnlocked };
+        return { unlock, announceAndRing, playRingtone, isUnlocked: () => audioUnlocked };
     })();
 
     /**
@@ -398,6 +468,16 @@
 
     /**
      * ═══════════════════════════════════════════════════════════
+     *  Preload voices (beberapa browser memuat voices secara async)
+     * ═══════════════════════════════════════════════════════════
+     */
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════
      *  AJAX POLLING — Real-time update tanpa refresh manual
      * ═══════════════════════════════════════════════════════════
      */
@@ -405,6 +485,7 @@
         'use strict';
 
         const ANTRIAN_ID = {{ $antrian->id }};
+        const KODE_ANTRIAN = '{{ $antrian->kode_antrian }}';
         const API_URL    = '/api/antrian/status/' + ANTRIAN_ID;
         const INTERVAL   = 5000;
 
@@ -413,6 +494,8 @@
         const elEstimasiWaktu   = document.getElementById('estimasiWaktu');
         const elStatusBanner    = document.getElementById('statusBanner');
         const elStatusText      = document.getElementById('statusText');
+        const elProgressBar     = document.getElementById('progressBar');
+        const elProgressLabel   = document.getElementById('progressLabel');
 
         let prevData = {};
 
@@ -428,6 +511,7 @@
         }
 
         function updateUI(data) {
+            // Update info rows
             if (prevData.sedang_dipanggil !== data.sedang_dipanggil) {
                 animateValue(elSedangDipanggil, data.sedang_dipanggil);
             } else {
@@ -440,29 +524,46 @@
                 elSisaAntrian.textContent = data.sisa_antrian;
             }
 
+            const estimasiText = data.estimasi_menit > 0
+                ? data.estimasi_menit + ' min' : '0 min';
             if (prevData.estimasi_menit !== data.estimasi_menit) {
-                const estimasiText = data.estimasi_menit > 0
-                    ? data.estimasi_menit + ' min'
-                    : '0 min';
                 animateValue(elEstimasiWaktu, estimasiText);
             } else {
-                elEstimasiWaktu.textContent = data.estimasi_menit > 0
-                    ? data.estimasi_menit + ' min'
-                    : '0 min';
+                elEstimasiWaktu.textContent = estimasiText;
             }
 
+            // Update progress bar
+            updateProgressBar(data);
+
+            // Update status banner
             updateStatusBanner(data.status);
 
+            // Show/hide button
             const btnAntrianBaru = document.getElementById('btnAntrianBaru');
             if (data.status === 'selesai' || data.status === 'dilewati') {
-                btnAntrianBaru.style.display = 'block';
-                btnAntrianBaru.classList.add('show');
+                btnAntrianBaru.style.display = 'flex';
+                btnAntrianBaru.style.animation = 'fadeSlideUp 0.5s ease forwards';
             } else {
                 btnAntrianBaru.style.display = 'none';
-                btnAntrianBaru.classList.remove('show');
             }
 
             prevData = { ...data };
+        }
+
+        function updateProgressBar(data) {
+            const total = data.total_antrian_keperluan || 1;
+            const served = data.sudah_dilayani || 0;
+            const pct = Math.min(Math.round((served / total) * 100), 100);
+
+            elProgressBar.style.width = pct + '%';
+            elProgressLabel.textContent = served + ' / ' + total + ' dilayani';
+
+            // Warna hijau jika sudah selesai/dipanggil
+            if (data.status === 'selesai' || data.status === 'dipanggil') {
+                elProgressBar.style.background = 'linear-gradient(135deg, #059669, #10B981)';
+            } else {
+                elProgressBar.style.background = 'linear-gradient(135deg, var(--primary), var(--primary-light))';
+            }
         }
 
         function updateStatusBanner(status) {
@@ -495,22 +596,22 @@
             elStatusBanner.classList.add(config.class);
             elStatusText.innerHTML = '<i class="bi ' + config.icon + ' me-1"></i> ' + config.text;
 
-            // 🔔 Notifikasi Dering + Getar saat dipanggil
+            // 🔔 TTS Announcement + Dering 15 detik saat dipanggil
             if (status === 'dipanggil' && prevData.status !== 'dipanggil') {
-                // Bunyikan suara dering (20 detik)
-                NotifikasiSuara.play();
+                // Ucapkan nomor antrian, lalu otomatis dering setelahnya
+                NotifikasiSuara.announceAndRing(KODE_ANTRIAN);
 
-                // Getarkan device selama 20 detik (pattern panjang-pause diulang)
+                // Getarkan device selama 15 detik
                 if (navigator.vibrate) {
                     const vibPattern = [];
-                    for(let i=0; i<28; i++) {
+                    for(let i = 0; i < 20; i++) {
                         vibPattern.push(500, 250);
                     }
                     navigator.vibrate(vibPattern);
                 }
             } else if (status === 'selesai' || status === 'dilewati') {
-                // Matikan getaran secara paksa jika status berubah sebelum dideringkan sepenuhnya
                 if (navigator.vibrate) navigator.vibrate(0);
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             }
         }
 
@@ -534,4 +635,3 @@
     })();
 </script>
 @endpush
-

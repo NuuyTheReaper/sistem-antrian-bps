@@ -34,6 +34,17 @@ class AntrianController extends Controller
             'nomor_hp'  => 'required|string|max:20',
         ]);
 
+        // Pencegahan antrian ganda: cek apakah nomor HP sudah punya antrian aktif hari ini
+        $antrianAktif = Antrian::hariIni()
+            ->where('nomor_hp', $validated['nomor_hp'])
+            ->whereIn('status', ['menunggu', 'dipanggil'])
+            ->first();
+
+        if ($antrianAktif) {
+            return redirect()->route('antrian.tiket', $antrianAktif->id)
+                ->with('info', 'Anda sudah memiliki antrian aktif hari ini.');
+        }
+
         $antrian = Antrian::create([
             'nomor_antrian'   => Antrian::nomorBerikutnya($validated['keperluan']),
             'nama'            => $validated['nama'],
@@ -68,15 +79,26 @@ class AntrianController extends Controller
 
         $sedangDipanggil = Antrian::sedangDipanggil($antrian->keperluan);
         $sisaAntrian     = Antrian::sisaAntrianDidepan($antrian->nomor_antrian, $antrian->keperluan);
-        $estimasiMenit   = Antrian::estimasiWaktuTunggu($antrian->nomor_antrian, $antrian->keperluan);
+        $estimasiMenit   = $sisaAntrian * 10;
+        $totalAntrian    = Antrian::hariIni()->count();
+
+        // Untuk progress bar: total antrian di jalur keperluan yang sama
+        $totalAntrianKeperluan = Antrian::hariIni()->keperluan($antrian->keperluan)->count();
+        $sudahDilayani = Antrian::hariIni()
+            ->keperluan($antrian->keperluan)
+            ->whereIn('status', ['selesai', 'dipanggil'])
+            ->count();
 
         return response()->json([
-            'kode_antrian'     => $antrian->kode_antrian,
-            'status'           => $antrian->status,
-            'sedang_dipanggil' => $sedangDipanggil ? $sedangDipanggil->kode_antrian : '-',
-            'sisa_antrian'     => $sisaAntrian,
-            'estimasi_menit'   => $estimasiMenit,
-            'keperluan'        => $antrian->keperluan,
+            'kode_antrian'           => $antrian->kode_antrian,
+            'status'                 => $antrian->status,
+            'sedang_dipanggil'       => $sedangDipanggil ? $sedangDipanggil->kode_antrian : '-',
+            'sisa_antrian'           => $sisaAntrian,
+            'estimasi_menit'         => $estimasiMenit,
+            'total_antrian'          => $totalAntrian,
+            'keperluan'              => $antrian->keperluan,
+            'total_antrian_keperluan'=> $totalAntrianKeperluan,
+            'sudah_dilayani'         => $sudahDilayani,
         ]);
     }
 
@@ -200,6 +222,17 @@ class AntrianController extends Controller
             'keperluan' => 'required|in:Konsultasi,Pengaduan',
             'nomor_hp'  => 'required|string|max:20',
         ]);
+
+        // Pencegahan antrian ganda: cek apakah nomor HP sudah punya antrian aktif hari ini
+        $antrianAktif = Antrian::hariIni()
+            ->where('nomor_hp', $validated['nomor_hp'])
+            ->whereIn('status', ['menunggu', 'dipanggil'])
+            ->first();
+
+        if ($antrianAktif) {
+            return redirect()->route('admin.dashboard')
+                ->with('info', "Nomor HP {$validated['nomor_hp']} sudah memiliki antrian aktif: {$antrianAktif->kode_antrian}.");
+        }
 
         $antrian = Antrian::create([
             'nomor_antrian'   => Antrian::nomorBerikutnya($validated['keperluan']),

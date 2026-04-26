@@ -16,24 +16,26 @@
         flex-wrap: wrap;
     }
     .periode-btn {
-        background: var(--dark-card);
-        border: 1px solid var(--glass-border);
-        color: var(--text-secondary);
-        padding: 0.5rem 1.25rem;
-        border-radius: var(--radius-sm);
-        font-size: 0.85rem;
+        background: #F8FAFC;
+        border: 1px solid var(--border-color);
+        color: var(--text-muted);
+        padding: 8px 20px;
+        border-radius: var(--radius-xl);
+        font-size: 0.9rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
     }
     .periode-btn:hover {
         border-color: var(--primary);
-        color: var(--primary-light);
+        color: var(--primary);
+        background: #EEF2FF;
     }
     .periode-btn.active {
-        background: var(--gradient-primary);
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
         border-color: var(--primary);
         color: white;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
     }
 
     /* ─── Ringkasan Cards ──────────────────────────────── */
@@ -52,7 +54,17 @@
         text-transform: uppercase;
         letter-spacing: 1px;
         color: var(--text-secondary);
-        font-weight: 600;
+        font-weight: 700;
+        margin-top: 5px;
+    }
+
+    .ringkasan-icon-bg {
+        position: absolute;
+        right: -10px;
+        bottom: -10px;
+        font-size: 4rem;
+        opacity: 0.05;
+        transform: rotate(-15deg);
     }
 
     /* ─── Chart Container ──────────────────────────────── */
@@ -106,7 +118,7 @@
 @endpush
 
 @section('content')
-<div class="container">
+<div class="container" style="max-width: 1200px;">
 
     {{-- Header --}}
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -128,15 +140,15 @@
     </div>
 
     {{-- Periode Filter --}}
-    <div class="card-glass p-3 mb-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-center">
-            <span class="fw-bold" style="color: var(--text-primary);">
-                <i class="bi bi-calendar-range me-1" style="color: var(--secondary);"></i>
-                Periode
+    <div class="card-app p-3 mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center px-2">
+            <span class="fw-bold" style="color: var(--text-main);">
+                <i class="bi bi-calendar-range me-2 text-primary"></i>
+                Periode Laporan
             </span>
             <div class="periode-tabs mt-2 mt-sm-0">
                 <button class="periode-btn active" data-periode="hari_ini" onclick="gantiPeriode('hari_ini', this)">
-                    Hari Ini
+                    Harian
                 </button>
                 <button class="periode-btn" data-periode="mingguan" onclick="gantiPeriode('mingguan', this)">
                     Mingguan
@@ -151,45 +163,49 @@
     {{-- Ringkasan Statistik --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
-            <div class="card-glass ringkasan-card" style="border-top: 3px solid var(--primary-light);">
-                <div class="ringkasan-number" id="ringkasanTotal" style="color: var(--primary-light);">-</div>
+            <div class="card-app ringkasan-card" style="border-top: 4px solid var(--primary); background: rgba(79, 70, 229, 0.03);">
+                <div class="ringkasan-number" id="ringkasanTotal" style="color: var(--primary);">-</div>
                 <div class="ringkasan-label">Total Pengunjung</div>
+                <i class="bi bi-people ringkasan-icon-bg"></i>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card-glass ringkasan-card" style="border-top: 3px solid var(--accent);">
-                <div class="ringkasan-number" id="ringkasanRataRata" style="color: var(--accent);">-</div>
+            <div class="card-app ringkasan-card" style="border-top: 4px solid var(--warning); background: rgba(245, 158, 11, 0.03);">
+                <div class="ringkasan-number" id="ringkasanRataRata" style="color: var(--warning);">-</div>
                 <div class="ringkasan-label">Rata-rata / Hari</div>
+                <i class="bi bi-calendar-check ringkasan-icon-bg"></i>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card-glass ringkasan-card" style="border-top: 3px solid var(--success);">
-                <div class="ringkasan-number" id="ringkasanTerramai" style="color: var(--success);">-</div>
+            <div class="card-app ringkasan-card" style="border-top: 4px solid var(--secondary); background: rgba(16, 185, 129, 0.03);">
+                <div class="ringkasan-number" id="ringkasanTerramai" style="color: var(--secondary);">-</div>
                 <div class="ringkasan-label">Hari Terramai</div>
+                <i class="bi bi-graph-up-arrow ringkasan-icon-bg"></i>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card-glass ringkasan-card" style="border-top: 3px solid var(--secondary);">
-                <div class="ringkasan-number" id="ringkasanWaktu" style="color: var(--secondary);">-</div>
+            <div class="card-app ringkasan-card" style="border-top: 4px solid var(--primary-light); background: rgba(129, 140, 248, 0.03);">
+                <div class="ringkasan-number" id="ringkasanWaktu" style="color: var(--primary-light);">-</div>
                 <div class="ringkasan-label">Avg. Waktu Layanan</div>
+                <i class="bi bi-clock-history ringkasan-icon-bg"></i>
             </div>
         </div>
     </div>
 
     {{-- Grafik Pengunjung Harian --}}
-    <div class="card-glass mb-4" style="overflow: hidden; position: relative;">
-        <div class="p-3" style="border-bottom: 1px solid var(--glass-border);">
-            <h5 class="mb-0 fw-bold">
-                <i class="bi bi-bar-chart-fill me-2" style="color: var(--secondary);"></i>
-                Grafik Pengunjung Harian
-            </h5>
+    <div class="card-app mb-4" style="overflow: hidden; position: relative;">
+        <div class="p-3 px-4" style="border-bottom: 1px solid var(--border-color); background: #fdfdfd;">
+            <h6 class="mb-0 fw-bold">
+                <i class="bi bi-bar-chart-fill me-2 text-primary"></i>
+                Grafik Pengunjung
+            </h6>
         </div>
         <div class="chart-wrapper" id="chartPengunjungWrapper">
             <canvas id="chartPengunjung"></canvas>
             <div class="loading-overlay" id="loadingOverlay">
                 <div class="text-center">
-                    <div class="spinner-border text-light mb-2" role="status"></div>
-                    <div class="text-secondary">Memuat data...</div>
+                    <div class="spinner-border text-primary mb-2" role="status"></div>
+                    <div class="text-muted fw-medium">Memuat data...</div>
                 </div>
             </div>
         </div>
@@ -199,13 +215,13 @@
     <div class="row g-3 mb-4">
 
         {{-- Grafik Keperluan (Stacked Bar) --}}
-        <div class="col-lg-7">
-            <div class="card-glass" style="overflow: hidden; position: relative; height: 100%;">
-                <div class="p-3" style="border-bottom: 1px solid var(--glass-border);">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-layers-fill me-2" style="color: var(--secondary);"></i>
+        <div class="col-lg-8">
+            <div class="card-app" style="overflow: hidden; position: relative; height: 100%;">
+                <div class="p-3 px-4" style="border-bottom: 1px solid var(--border-color); background: #fdfdfd;">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-layers-fill me-2 text-primary"></i>
                         Berdasarkan Keperluan
-                    </h5>
+                    </h6>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chartKeperluan"></canvas>
@@ -214,15 +230,15 @@
         </div>
 
         {{-- Grafik Distribusi Status (Doughnut) --}}
-        <div class="col-lg-5">
-            <div class="card-glass" style="overflow: hidden; position: relative; height: 100%;">
-                <div class="p-3" style="border-bottom: 1px solid var(--glass-border);">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-pie-chart-fill me-2" style="color: var(--secondary);"></i>
+        <div class="col-lg-4">
+            <div class="card-app d-flex flex-column" style="overflow: hidden; position: relative; height: 100%;">
+                <div class="p-3 px-4" style="border-bottom: 1px solid var(--border-color); background: #fdfdfd;">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-pie-chart-fill me-2 text-primary"></i>
                         Distribusi Status
-                    </h5>
+                    </h6>
                 </div>
-                <div class="doughnut-wrapper">
+                <div class="doughnut-wrapper flex-grow-1 d-flex flex-column justify-content-center align-items-center">
                     <canvas id="chartStatus"></canvas>
                 </div>
                 <div class="d-flex justify-content-center gap-3 pb-3 flex-wrap" id="statusLegend">
@@ -410,16 +426,16 @@
                     {
                         label: 'Konsultasi',
                         data: data.konsultasi,
-                        backgroundColor: 'rgba(6, 182, 212, 0.7)',
-                        borderColor: 'rgba(6, 182, 212, 1)',
+                        backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                        borderColor: 'rgba(79, 70, 229, 1)',
                         borderWidth: 1,
                         borderRadius: 4,
                     },
                     {
                         label: 'Pengaduan',
                         data: data.pengaduan,
-                        backgroundColor: 'rgba(245, 158, 11, 0.7)',
-                        borderColor: 'rgba(245, 158, 11, 1)',
+                        backgroundColor: 'rgba(204, 42, 58, 0.7)',
+                        borderColor: '#cc2a3a',
                         borderWidth: 1,
                         borderRadius: 4,
                     }

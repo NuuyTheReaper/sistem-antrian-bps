@@ -39,7 +39,7 @@ class Antrian extends Model
     public function getKodeAntrianAttribute()
     {
         $prefix = $this->keperluan === 'Konsultasi' ? 'K-' : 'P-';
-        return $prefix . $this->nomor_antrian;
+        return $prefix . str_pad($this->nomor_antrian, 3, '0', STR_PAD_LEFT);
     }
 
     // ─── Scopes ─────────────────────────────────────────────

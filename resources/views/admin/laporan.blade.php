@@ -293,17 +293,31 @@
         overlay.classList.add('show');
 
         try {
-            const response = await fetch('/admin/api/laporan?periode=' + periode);
-            if (!response.ok) throw new Error('Fetch failed');
+            // Gunakan URL absolut dengan timestamp untuk menghindari cache di hosting
+            const timestamp = new Date().getTime();
+            const url = `{{ url('/admin/api/laporan') }}?periode=${periode}&t=${timestamp}`;
+            
+            console.log('Fetching data from:', url);
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Fetch failed: ' + response.status);
+            
             const data = await response.json();
+            console.log('Data received:', data);
 
-            updateRingkasan(data.ringkasan);
-            renderChartPengunjung(data);
-            renderChartKeperluan(data);
-            renderChartStatus(data);
+            if (data.labels && data.labels.length > 0) {
+                updateRingkasan(data.ringkasan);
+                renderChartPengunjung(data);
+                renderChartKeperluan(data);
+                renderChartStatus(data);
+            } else {
+                console.warn('No data found for this period');
+                // Anda bisa menambahkan tampilan "Data Kosong" di sini jika perlu
+            }
 
         } catch (error) {
             console.error('Laporan fetch error:', error);
+            alert('Gagal mengambil data laporan. Silakan cek koneksi atau login kembali.');
         } finally {
             overlay.classList.remove('show');
         }

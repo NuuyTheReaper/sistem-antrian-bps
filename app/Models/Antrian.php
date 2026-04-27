@@ -49,7 +49,7 @@ class Antrian extends Model
      */
     public function scopeHariIni($query)
     {
-        return $query->where('tanggal_antrian', Carbon::today());
+        return $query->whereDate('tanggal_antrian', Carbon::today());
     }
 
     /**

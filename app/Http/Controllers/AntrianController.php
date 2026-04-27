@@ -326,7 +326,8 @@ class AntrianController extends Controller
 
         // Query data harian (termasuk soft-deleted agar laporan tetap akurat)
         $dataHarian = Antrian::withTrashed()
-            ->whereBetween('tanggal_antrian', [$mulai, $selesai])
+            ->whereDate('tanggal_antrian', '>=', $mulai)
+            ->whereDate('tanggal_antrian', '<=', $selesai)
             ->selectRaw("
                 DATE(tanggal_antrian) as tanggal,
                 COUNT(*) as total,
@@ -378,11 +379,13 @@ class AntrianController extends Controller
 
         // Rata-rata waktu layanan (menit) — hanya yang selesai
         $avgWaktuLayanan = Antrian::withTrashed()
-            ->whereBetween('tanggal_antrian', [$mulai, $selesai])
+            ->whereDate('tanggal_antrian', '>=', $mulai)
+            ->whereDate('tanggal_antrian', '<=', $selesai)
             ->where('status', 'selesai')
             ->whereNotNull('waktu_dipanggil')
             ->whereNotNull('waktu_selesai')
-            ->selectRaw("AVG(TIMESTAMPDIFF(MINUTE, waktu_dipanggil, waktu_selesai)) as avg_menit")->value('avg_menit');
+            ->selectRaw("ROUND(AVG(TIMESTAMPDIFF(MINUTE, waktu_dipanggil, waktu_selesai)), 1) as avg_menit")
+            ->value('avg_menit');
 
         return response()->json([
             'labels'           => $labels,

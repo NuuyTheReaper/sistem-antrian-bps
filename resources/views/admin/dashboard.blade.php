@@ -470,16 +470,18 @@
     let filterStatusValue = 'semua';
     let filterLayananValue = 'semua';
     let searchQuery = '';
+    const baseUrl = '{{ url("/") }}';
     
     // State untuk melacak nomor terakhir yang dipanggil agar tidak double suara
     let lastSpokenKonsultasi = '{{ $sedangDipanggilKonsultasi ? $sedangDipanggilKonsultasi->kode_antrian : "" }}';
     let lastSpokenPengaduan = '{{ $sedangDipanggilPengaduan ? $sedangDipanggilPengaduan->kode_antrian : "" }}';
 
+    // Inisialisasi data awal dari Blade agar filter langsung jalan tanpa nunggu polling
+    let currentAntrianData = @json($antrians);
+
     document.getElementById('filterStatus').addEventListener('change', (e) => { filterStatusValue = e.target.value; updateTable(); });
     document.getElementById('filterLayanan').addEventListener('change', (e) => { filterLayananValue = e.target.value; updateTable(); });
     document.getElementById('searchAntrian').addEventListener('input', (e) => { searchQuery = e.target.value.toLowerCase(); updateTable(); });
-
-    let currentAntrianData = [];
 
     function updateTable() {
         let tbody = document.getElementById('tableAntrianBody');
@@ -489,13 +491,16 @@
             // Filter Layanan
             if (filterLayananValue !== 'semua' && item.keperluan !== filterLayananValue) return false;
 
-            // Filter Status
-            if (filterStatusValue === 'belum' && item.status !== 'menunggu') return false;
-            if (filterStatusValue === 'terpanggil' && item.status === 'menunggu') return false;
-            if (filterStatusValue !== 'semua' && filterStatusValue !== 'belum' && filterStatusValue !== 'terpanggil' && item.status !== filterStatusValue) return false;
+            // Filter Status (Gunakan lowercase agar aman di hosting)
+            const itemStatus = item.status.toLowerCase();
+            if (filterStatusValue === 'belum' && itemStatus !== 'menunggu') return false;
+            if (filterStatusValue === 'terpanggil' && itemStatus === 'menunggu') return false;
+            if (filterStatusValue !== 'semua' && filterStatusValue !== 'belum' && filterStatusValue !== 'terpanggil' && itemStatus !== filterStatusValue.toLowerCase()) return false;
 
             // Search
-            if (searchQuery && !item.nama.toLowerCase().includes(searchQuery) && !item.kode_antrian.toLowerCase().includes(searchQuery)) return false;
+            const nameMatch = item.nama ? item.nama.toLowerCase().includes(searchQuery) : false;
+            const codeMatch = item.kode_antrian ? item.kode_antrian.toLowerCase().includes(searchQuery) : false;
+            if (searchQuery && !nameMatch && !codeMatch) return false;
 
             return true;
         });
@@ -506,31 +511,34 @@
         }
 
         let html = '';
-        const csrf = document.querySelector('meta[name="csrf-token"]').content;
+        const csrfEl = document.querySelector('meta[name="csrf-token"]');
+        const csrf = csrfEl ? csrfEl.content : '';
+
         filtered.forEach(item => {
-            const rowStyle = item.status === 'dipanggil' ? 'background: #EEF2FF;' : '';
+            const rowStyle = item.status.toLowerCase() === 'dipanggil' ? 'background: #EEF2FF;' : '';
             const kpColor = item.keperluan === 'Konsultasi' ? '#EEF2FF' : '#FEE2E2';
             const kpTextC = item.keperluan === 'Konsultasi' ? '#4338CA' : '#DC2626';
             const statusU = item.status.charAt(0).toUpperCase() + item.status.slice(1);
             
             let aksi = '';
-            if(item.status === 'menunggu') {
+            const sLower = item.status.toLowerCase();
+            if(sLower === 'menunggu') {
                 aksi = `<span class="text-muted" style="font-size: 0.8rem; font-weight: 500;"><i class="bi bi-clock"></i> Menunggu</span>`;
-            } else if(item.status === 'dipanggil') {
+            } else if(sLower === 'dipanggil') {
                 aksi = `
                 <div class="d-flex gap-2 justify-content-center">
-                    <form action="/admin/antrian/lewati/${item.id}" method="POST" class="d-inline">
+                    <form action="${baseUrl}/admin/antrian/lewati/${item.id}" method="POST" class="d-inline">
                         <input type="hidden" name="_token" value="${csrf}">
                         <button type="submit" class="btn-warning-custom px-3 py-1" title="Lewati / Tunda"><i class="bi bi-skip-forward-fill"></i> Skip</button>
                     </form>
-                    <form action="/admin/antrian/selesai/${item.id}" method="POST" class="d-inline">
+                    <form action="${baseUrl}/admin/antrian/selesai/${item.id}" method="POST" class="d-inline">
                         <input type="hidden" name="_token" value="${csrf}">
                         <button type="submit" class="btn-success-custom px-3 py-1" title="Selesai dilayani"><i class="bi bi-check-lg"></i> Selesai</button>
                     </form>
                 </div>`;
-            } else if(item.status === 'selesai') {
+            } else if(sLower === 'selesai') {
                 aksi = `<span class="text-success fw-bold" style="font-size: 0.85rem;"><i class="bi bi-check-circle-fill"></i> Selesai</span>`;
-            } else if(item.status === 'dilewati') {
+            } else if(sLower === 'dilewati') {
                 aksi = `<span class="text-danger fw-bold" style="font-size: 0.85rem;"><i class="bi bi-skip-forward-circle-fill"></i> Dilewati</span>`;
             }
             
@@ -543,7 +551,7 @@
                     <td><div class="fw-bold" style="color: var(--text-main);">${item.nama}</div><small class="text-muted" style="font-size: 0.75rem; font-weight: 500;">${addr}</small></td>
                     <td><span class="badge rounded-pill px-2 py-1" style="background: ${kpColor}; color: ${kpTextC}; font-size: 0.75rem; font-weight: 600;">${item.keperluan}</span></td>
                     <td style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);">${item.nomor_hp}</td>
-                    <td class="text-center"><span class="badge-status badge-${item.status}">${statusU}</span></td>
+                    <td class="text-center"><span class="badge-status badge-${sLower}">${statusU}</span></td>
                     <td class="text-center">${aksi}</td>
                 </tr>
             `;
@@ -551,30 +559,36 @@
         tbody.innerHTML = html;
     }
 
+    // Panggil updateTable pertama kali
+    updateTable();
+
     setInterval(function() {
         fetch('{{ route("api.admin.data") }}')
             .then(res => res.json())
             .then(data => {
-                document.getElementById('statPengaduan').textContent = data.sedang_dipanggil_pengaduan;
-                document.getElementById('statKonsultasi').textContent = data.sedang_dipanggil_konsultasi;
+                const spKonsultasi = document.getElementById('statKonsultasi');
+                const spPengaduan = document.getElementById('statPengaduan');
+                if(spKonsultasi) spKonsultasi.textContent = data.sedang_dipanggil_konsultasi;
+                if(spPengaduan) spPengaduan.textContent = data.sedang_dipanggil_pengaduan;
+                
                 document.getElementById('totalPengunjung').textContent = data.antrians.length;
                 document.getElementById('totalMenunggu').textContent = data.total_menunggu;
                 document.getElementById('totalSelesai').textContent = data.total_selesai;
                 document.getElementById('totalDilewati').textContent = data.total_dilewati;
                 
-                // Cek apakah ada panggilan baru untuk disuarakan
                 if (data.sedang_dipanggil_konsultasi !== '-' && data.sedang_dipanggil_konsultasi !== lastSpokenKonsultasi) {
                     lastSpokenKonsultasi = data.sedang_dipanggil_konsultasi;
-                    speakAntrian(lastSpokenKonsultasi, 'Konsultasi');
+                    if(typeof speakAntrian === 'function') speakAntrian(lastSpokenKonsultasi, 'Konsultasi');
                 }
                 if (data.sedang_dipanggil_pengaduan !== '-' && data.sedang_dipanggil_pengaduan !== lastSpokenPengaduan) {
                     lastSpokenPengaduan = data.sedang_dipanggil_pengaduan;
-                    speakAntrian(lastSpokenPengaduan, 'Pengaduan');
+                    if(typeof speakAntrian === 'function') speakAntrian(lastSpokenPengaduan, 'Pengaduan');
                 }
 
                 currentAntrianData = data.antrians;
                 updateTable();
             }).catch(e => console.log('Polling fail: ', e));
     }, 4000);
+
 </script>
 @endpush

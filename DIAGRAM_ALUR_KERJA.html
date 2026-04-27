@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagram Alur Kerja Sistem Antrian BPS</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px 20px; }
+        .card { border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 40px; }
+        .card-header { background: linear-gradient(135deg, #4f46e5, #4338ca); color: white; border-radius: 15px 15px 0 0 !important; padding: 20px; font-weight: bold; }
+        .mermaid { display: flex; justify-content: center; padding: 20px; }
+        .btn-download { background-color: #4f46e5; color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn-download:hover { background-color: #4338ca; color: white; }
+        @media print { .btn-download, .no-print { display: none; } .card { box-shadow: none; border: 1px solid #ddd; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="text-center mb-5 no-print">
+        <h1 class="fw-bold">Dokumentasi Alur Kerja</h1>
+        <p class="text-muted">Gunakan tombol <b>Cetak/PDF</b> di browser untuk mendownload halaman ini.</p>
+        <button onclick="window.print()" class="btn-download">
+            <i class="bi bi-printer"></i> Cetak ke PDF / Download Gambar
+        </button>
+    </div>
+
+    <!-- DIAGRAM PENGUNJUNG -->
+    <div class="card">
+        <div class="card-header text-center">ALUR KERJA PENGUNJUNG (MOBILE)</div>
+        <div class="card-body">
+            <div class="mermaid">
+                graph TD
+                    A([Mulai]) --> B[Scan QR Code di Loket]
+                    B --> C[Halaman Pendaftaran]
+                    C --> D{Isi Data & Submit}
+                    D --> E[Validasi Server: Cek Nomor HP]
+                    E -->|Sudah Ada| F[Redirect ke Tiket Lama]
+                    E -->|Belum Ada| G[Buat Antrian Baru & Generate No]
+                    F --> H[Halaman Tiket Digital]
+                    G --> H
+                    H --> I[AJAX Polling 5 Detik]
+                    I --> J{Status Berubah?}
+                    J -->|Masih Menunggu| K[Update Progress Bar]
+                    J -->|Dipanggil| L[TTS Suara & Dering 15 Detik]
+                    J -->|Selesai| M[Selesai]
+                    K --> I
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAGRAM ADMIN -->
+    <div class="card">
+        <div class="card-header text-center">ALUR KERJA ADMIN (MANAGEMENT)</div>
+        <div class="card-body">
+            <div class="mermaid">
+                graph LR
+                    A([Admin Login]) --> B[Dashboard Utama]
+                    B --> C[Pantau Tabel Antrian]
+                    C --> D{Pilih Aksi}
+                    D -->|Panggil| E[Status: Dipanggil]
+                    E --> F[Trigger Notifikasi ke HP Pengunjung]
+                    D -->|Selesai| G[Simpan Statistik & Selesai]
+                    D -->|Skip| H[Tandai Dilewati]
+                    B --> I[Daftar Manual]
+                    B --> J[Laporan & Statistik Grafik]
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+</script>
+
+</body>
+</html>

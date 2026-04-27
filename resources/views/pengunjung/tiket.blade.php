@@ -302,336 +302,148 @@
 @endsection
 
 @push('scripts')
+{{-- NoSleep.js untuk mencegah layar mati --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/NoSleep.min.js"></script>
 <script>
     /**
      * ═══════════════════════════════════════════════════════════
      *  NOTIFIKASI SUARA — TTS + Web Audio API Ringtone
-     *  1. Mengucapkan "Nomor antrian K-024, silakan menuju loket"
-     *  2. Setelah TTS selesai → dering otomatis 15 detik
      * ═══════════════════════════════════════════════════════════
      */
     const NotifikasiSuara = (function() {
         let audioCtx = null;
         let audioUnlocked = false;
+        let noSleep = new NoSleep();
 
-        /**
-         * Inisialisasi AudioContext (harus dipanggil dari user gesture).
-         */
         function unlock() {
             if (audioUnlocked) return;
             try {
+                // AudioContext untuk standar & iOS
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
-                // Play silent sound to unlock
+
+                // Aktifkan NoSleep agar layar tidak mati (mencegah background freeze)
+                noSleep.enable();
+
+                // Play silent buffer untuk unlock
                 const buffer = audioCtx.createBuffer(1, 1, 22050);
                 const source = audioCtx.createBufferSource();
                 source.buffer = buffer;
-                source.loop = true;
                 source.connect(audioCtx.destination);
                 source.start(0);
+                
                 audioUnlocked = true;
 
-                // Update banner UI
+                // Update UI Banner
                 const banner = document.getElementById('audioBanner');
                 if (banner) {
-                    banner.innerHTML = '<i class="bi bi-bell-fill text-success"></i> <span>Notifikasi suara aktif</span>';
-                    banner.style.borderColor = '#A7F3D0';
+                    banner.innerHTML = '<i class="bi bi-bell-fill text-success"></i> <span>Notifikasi Suara & Layanan Aktif</span>';
                     banner.style.background = '#ECFDF5';
-                    setTimeout(() => {
-                        banner.style.animation = 'fadeSlideUp 0.3s ease reverse forwards';
-                        setTimeout(() => banner.style.display = 'none', 300);
-                    }, 2000);
+                    setTimeout(() => banner.style.display = 'none', 3000);
                 }
+                console.log("Audio & NoSleep Unlocked");
             } catch(e) {
-                console.warn('Audio unlock failed:', e);
+                console.error('Unlock failed:', e);
             }
         }
 
-        /**
-         * Ucapkan nomor antrian menggunakan SpeechSynthesis API,
-         * lalu mainkan dering 15 detik setelah TTS selesai.
-         */
         function announceAndRing(kodeAntrian) {
-            if (!audioCtx || !audioUnlocked) {
-                // Fallback: langsung dering tanpa TTS
-                playRingtone();
-                return;
-            }
+            if (!audioUnlocked) return;
 
-            // Coba TTS dulu
             if ('speechSynthesis' in window) {
-                // Cancel any pending speech
                 window.speechSynthesis.cancel();
-
-                const teks = `Nomor antrian ${kodeAntrian.split('').join(' ')}, silakan menuju loket pelayanan`;
-                const utterance = new SpeechSynthesisUtterance(teks);
+                const utterance = new SpeechSynthesisUtterance(`Nomor antrian ${kodeAntrian.split('').join(' ')}, silakan menuju loket`);
                 utterance.lang = 'id-ID';
                 utterance.rate = 0.9;
-                utterance.pitch = 1.0;
-                utterance.volume = 1.0;
-
-                // Pilih voice Indonesia jika tersedia
-                const voices = window.speechSynthesis.getVoices();
-                const idVoice = voices.find(v => v.lang.startsWith('id'));
-                if (idVoice) utterance.voice = idVoice;
-
-                utterance.onend = function() {
-                    // Setelah TTS selesai → dering 15 detik
-                    setTimeout(() => playRingtone(), 500);
-                };
-                utterance.onerror = function() {
-                    // Fallback jika TTS gagal
-                    playRingtone();
-                };
-
+                
+                utterance.onend = () => playRingtone();
+                utterance.onerror = () => playRingtone();
                 window.speechSynthesis.speak(utterance);
             } else {
-                // Browser tidak support TTS → langsung dering
                 playRingtone();
             }
         }
 
-        /**
-         * Mainkan nada dering 15 detik.
-         * Pattern: 2 nada bergantian (ding-dong)
-         */
         function playRingtone() {
-            if (!audioCtx || !audioUnlocked) return;
+            if (!audioCtx || audioCtx.state === 'suspended') return;
 
             const now = audioCtx.currentTime;
-            const DURASI_DETIK = 15;
-            const pattern = [];
-
-            // 1 loop (2 nada) butuh 0.5 detik. Untuk 15 detik butuh 30 loop.
-            for (let i = 0; i < (DURASI_DETIK * 2); i++) {
-                const startOff = i * 0.5;
-                pattern.push({ freq: 880, start: startOff, duration: 0.15 });
-                pattern.push({ freq: 1100, start: startOff + 0.2, duration: 0.15 });
+            const DURASI = 15; 
+            
+            // Ding-dong pattern
+            for (let i = 0; i < (DURASI * 2); i++) {
+                const start = i * 0.5;
+                playTone(880, now + start, 0.15);      // Nada 1
+                playTone(1100, now + start + 0.2, 0.15); // Nada 2
             }
-
-            pattern.forEach(note => {
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(note.freq, now + note.start);
-
-                // Envelope: fade in + fade out supaya tidak klik
-                gainNode.gain.setValueAtTime(0, now + note.start);
-                gainNode.gain.linearRampToValueAtTime(0.5, now + note.start + 0.02);
-                gainNode.gain.linearRampToValueAtTime(0, now + note.start + note.duration);
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-
-                oscillator.start(now + note.start);
-                oscillator.stop(now + note.start + note.duration + 0.01);
-            });
         }
 
-        return { unlock, announceAndRing, playRingtone, isUnlocked: () => audioUnlocked };
+        function playTone(freq, startTime, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(0, startTime);
+            gain.gain.linearRampToValueAtTime(0.3, startTime + 0.01);
+            gain.gain.linearRampToValueAtTime(0, startTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + duration + 0.01);
+        }
+
+        return { unlock, announceAndRing };
     })();
 
-    /**
-     * ═══════════════════════════════════════════════════════════
-     *  PERSIST TIKET — Simpan ID tiket ke localStorage
-     * ═══════════════════════════════════════════════════════════
-     */
-    (function() {
-        const today = new Date().toISOString().slice(0, 10);
-        localStorage.setItem('antrian_id', '{{ $antrian->id }}');
-        localStorage.setItem('antrian_tanggal', today);
-    })();
-
-    /**
-     * ═══════════════════════════════════════════════════════════
-     *  AMBIL ANTRIAN BARU — Hapus localStorage dan redirect
-     * ═══════════════════════════════════════════════════════════
-     */
-    function ambilAntrianBaru(e) {
-        e.preventDefault();
-        localStorage.removeItem('antrian_id');
-        localStorage.removeItem('antrian_tanggal');
-        window.location.href = '{{ route("antrian.daftar") }}';
-    }
-
-    /**
-     * ═══════════════════════════════════════════════════════════
-     *  UNLOCK AUDIO — Dipanggil dari tombol banner
-     * ═══════════════════════════════════════════════════════════
-     */
     function unlockAudio() {
         NotifikasiSuara.unlock();
     }
 
-    /**
-     * ═══════════════════════════════════════════════════════════
-     *  Preload voices (beberapa browser memuat voices secara async)
-     * ═══════════════════════════════════════════════════════════
-     */
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.getVoices();
-        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    // Registrasi Service Worker untuk Background Sync (Opsional tapi membantu)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.log("SW failed", err));
     }
 
     /**
      * ═══════════════════════════════════════════════════════════
-     *  AJAX POLLING — Real-time update tanpa refresh manual
+     *  AJAX POLLING WITH BACKGROUND RESILIENCE
      * ═══════════════════════════════════════════════════════════
      */
     (function() {
-        'use strict';
-
         const ANTRIAN_ID = {{ $antrian->id }};
         const KODE_ANTRIAN = '{{ $antrian->kode_antrian }}';
-        const API_URL    = '/api/antrian/status/' + ANTRIAN_ID;
-        const INTERVAL   = 5000;
-
-        const elSedangDipanggil = document.getElementById('sedangDipanggil');
-        const elSisaAntrian     = document.getElementById('sisaAntrian');
-        const elEstimasiWaktu   = document.getElementById('estimasiWaktu');
-        const elStatusBanner    = document.getElementById('statusBanner');
-        const elStatusText      = document.getElementById('statusText');
-        const elProgressBar     = document.getElementById('progressBar');
-        const elProgressLabel   = document.getElementById('progressLabel');
-
-        let prevData = {};
+        const API_URL = '/api/antrian/status/' + ANTRIAN_ID;
+        let prevStatus = '{{ $antrian->status }}';
 
         async function fetchStatus() {
             try {
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-                updateUI(data);
-            } catch (error) {
-                console.error('Polling error:', error);
-            }
-        }
+                const res = await fetch(API_URL + '?t=' + Date.now());
+                const data = await res.json();
+                
+                // Update UI mendasar
+                document.getElementById('sedangDipanggil').textContent = data.sedang_dipanggil;
+                document.getElementById('sisaAntrian').textContent = data.sisa_antrian;
+                document.getElementById('statusText').innerHTML = data.status;
 
-        function updateUI(data) {
-            // Update info rows
-            if (prevData.sedang_dipanggil !== data.sedang_dipanggil) {
-                animateValue(elSedangDipanggil, data.sedang_dipanggil);
-            } else {
-                elSedangDipanggil.textContent = data.sedang_dipanggil;
-            }
-
-            if (prevData.sisa_antrian !== data.sisa_antrian) {
-                animateValue(elSisaAntrian, data.sisa_antrian);
-            } else {
-                elSisaAntrian.textContent = data.sisa_antrian;
-            }
-
-            const estimasiText = data.estimasi_menit > 0
-                ? data.estimasi_menit + ' min' : '0 min';
-            if (prevData.estimasi_menit !== data.estimasi_menit) {
-                animateValue(elEstimasiWaktu, estimasiText);
-            } else {
-                elEstimasiWaktu.textContent = estimasiText;
-            }
-
-            // Update progress bar
-            updateProgressBar(data);
-
-            // Update status banner
-            updateStatusBanner(data.status);
-
-            // Show/hide button
-            const btnAntrianBaru = document.getElementById('btnAntrianBaru');
-            if (data.status === 'selesai' || data.status === 'dilewati') {
-                btnAntrianBaru.style.display = 'flex';
-                btnAntrianBaru.style.animation = 'fadeSlideUp 0.5s ease forwards';
-            } else {
-                btnAntrianBaru.style.display = 'none';
-            }
-
-            prevData = { ...data };
-        }
-
-        function updateProgressBar(data) {
-            const total = data.total_antrian_keperluan || 1;
-            const served = data.sudah_dilayani || 0;
-            const pct = Math.min(Math.round((served / total) * 100), 100);
-
-            elProgressBar.style.width = pct + '%';
-            elProgressLabel.textContent = served + ' / ' + total + ' dilayani';
-
-            // Warna hijau jika sudah selesai/dipanggil
-            if (data.status === 'selesai' || data.status === 'dipanggil') {
-                elProgressBar.style.background = 'linear-gradient(135deg, #059669, #10B981)';
-            } else {
-                elProgressBar.style.background = 'linear-gradient(135deg, var(--primary), var(--primary-light))';
-            }
-        }
-
-        function updateStatusBanner(status) {
-            elStatusBanner.className = 'status-banner';
-
-            const statusConfig = {
-                'menunggu': {
-                    class: 'status-menunggu',
-                    icon: 'bi-hourglass-split',
-                    text: 'Menunggu — Harap bersabar, antrian Anda akan segera dipanggil'
-                },
-                'dipanggil': {
-                    class: 'status-dipanggil',
-                    icon: 'bi-megaphone-fill',
-                    text: 'GILIRAN ANDA! Silakan menuju loket pelayanan'
-                },
-                'selesai': {
-                    class: 'status-selesai',
-                    icon: 'bi-check-circle-fill',
-                    text: 'Selesai — Terima kasih atas kunjungan Anda'
-                },
-                'dilewati': {
-                    class: 'status-dilewati',
-                    icon: 'bi-arrow-right-circle-fill',
-                    text: 'Dilewati — Silakan hubungi petugas untuk info lebih lanjut'
+                // Jika status berubah jadi dipanggil
+                if (data.status === 'dipanggil' && prevStatus !== 'dipanggil') {
+                    NotifikasiSuara.announceAndRing(KODE_ANTRIAN);
+                    // Vibrasi (Hanya Android)
+                    if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
                 }
-            };
-
-            const config = statusConfig[status] || statusConfig['menunggu'];
-            elStatusBanner.classList.add(config.class);
-            elStatusText.innerHTML = '<i class="bi ' + config.icon + ' me-1"></i> ' + config.text;
-
-            // 🔔 TTS Announcement + Dering 15 detik saat dipanggil
-            if (status === 'dipanggil' && prevData.status !== 'dipanggil') {
-                // Ucapkan nomor antrian, lalu otomatis dering setelahnya
-                NotifikasiSuara.announceAndRing(KODE_ANTRIAN);
-
-                // Getarkan device selama 15 detik
-                if (navigator.vibrate) {
-                    const vibPattern = [];
-                    for(let i = 0; i < 20; i++) {
-                        vibPattern.push(500, 250);
-                    }
-                    navigator.vibrate(vibPattern);
-                }
-            } else if (status === 'selesai' || status === 'dilewati') {
-                if (navigator.vibrate) navigator.vibrate(0);
-                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-            }
+                prevStatus = data.status;
+            } catch (e) { console.log("Polling error"); }
         }
 
-        function animateValue(element, newValue) {
-            element.textContent = newValue;
-            element.classList.add('value-changed');
-            setTimeout(() => element.classList.remove('value-changed'), 1000);
-        }
-
-        // ─── Inisialisasi ──────────────────────────────────
-        fetchStatus();
-        let pollingTimer = setInterval(fetchStatus, INTERVAL);
-
-        // Mencegah timer terhenti saat browser di-minimize / pindah tab
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                fetchStatus();
-            }
+        setInterval(fetchStatus, 5000);
+        
+        // Trigger saat tab dibuka kembali untuk memastikan data fresh
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) fetchStatus();
         });
-
     })();
 </script>
 @endpush

@@ -285,6 +285,12 @@ class AntrianController extends Controller
                 ->orderBy('tanggal', 'asc')
                 ->get();
 
+            // Petakan data harian berdasarkan tanggal agar mudah diambil
+            // Kita parse tanggalnya dulu ke format Y-m-d sebagai Key
+            $dataMap = $dataHarian->keyBy(function($item) {
+                return Carbon::parse($item->tanggal)->format('Y-m-d');
+            });
+
             $labels = [];
             $totalPengunjung = [];
             $dataKonsultasi = [];
@@ -297,15 +303,8 @@ class AntrianController extends Controller
                 $tanggalTarget = $cursor->format('Y-m-d');
                 $labels[] = $cursor->translatedFormat('d M');
 
-                $row = $dataHarian->first(function ($item) use ($tanggalTarget) {
-                    $val = $item->tanggal;
-                    if (!$val) return false;
-                    try {
-                        return Carbon::parse($val)->format('Y-m-d') === $tanggalTarget;
-                    } catch (\Exception $e) {
-                        return (string)$val === $tanggalTarget;
-                    }
-                });
+                // Ambil data dari map berdasarkan tanggal
+                $row = $dataMap->get($tanggalTarget);
 
                 $totalPengunjung[] = $row ? (int)$row->total : 0;
                 $dataKonsultasi[]  = $row ? (int)$row->konsultasi : 0;

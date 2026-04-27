@@ -183,39 +183,43 @@ class AntrianController extends Controller
         return back();
     }
 
-    public function reset()
+    public function resetHarian()
     {
         Antrian::hariIni()->delete(); // Soft delete semua data hari ini
         return back()->with('success', 'Antrian hari ini telah direset.');
     }
 
-    public function daftarManual()
+    public function formDaftarManual()
     {
         return view('admin.daftar-manual');
     }
 
     public function simpanDaftarManual(Request $request)
     {
-        $request->validate([
-            'nama'      => 'required|string|max:100',
-            'alamat'    => 'required|string',
-            'keperluan' => 'required|in:Konsultasi,Pengaduan',
-            'nomor_hp'  => 'required|string|max:20',
-        ]);
+        try {
+            $request->validate([
+                'nama'      => 'required|string|max:100',
+                'alamat'    => 'required|string',
+                'keperluan' => 'required|in:Konsultasi,Pengaduan',
+                'nomor_hp'  => 'required|string|max:20',
+            ]);
 
-        $lastAntrian = Antrian::hariIni()->max('nomor_antrian') ?? 0;
+            $lastAntrian = Antrian::hariIni()->max('nomor_antrian') ?? 0;
 
-        Antrian::create([
-            'nomor_antrian'   => $lastAntrian + 1,
-            'nama'            => $request->nama,
-            'alamat'          => $request->alamat,
-            'keperluan'       => $request->keperluan,
-            'nomor_hp'        => $request->nomor_hp,
-            'status'          => 'menunggu',
-            'tanggal_antrian' => Carbon::today(),
-        ]);
+            Antrian::create([
+                'nomor_antrian'   => $lastAntrian + 1,
+                'nama'            => $request->nama,
+                'alamat'          => $request->alamat,
+                'keperluan'       => $request->keperluan,
+                'nomor_hp'        => $request->nomor_hp,
+                'status'          => 'menunggu',
+                'tanggal_antrian' => Carbon::today(),
+            ]);
 
-        return redirect()->route('admin.dashboard')->with('success', 'Antrian manual berhasil ditambahkan.');
+            return redirect()->route('admin.dashboard')->with('success', 'Antrian manual berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Gagal mendaftar: ' . $e->getMessage());
+        }
     }
 
     /**

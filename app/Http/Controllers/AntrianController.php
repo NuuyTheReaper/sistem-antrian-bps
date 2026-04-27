@@ -12,7 +12,7 @@ class AntrianController extends Controller
     /**
      * Tampilkan halaman pendaftaran antrian untuk pengunjung.
      */
-    public function daftar()
+    public function formDaftar()
     {
         return view('pengunjung.daftar');
     }

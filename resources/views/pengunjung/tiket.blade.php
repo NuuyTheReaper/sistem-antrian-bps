@@ -153,30 +153,41 @@
         color: #DC2626;
     }
 
-    /* ─── Audio Banner ─── */
-    .audio-pill {
-        display: inline-flex;
+    /* ─── Interaction Overlay ─── */
+    #audioOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
         align-items: center;
-        gap: 10px;
-        background: #4F46E5;
-        border: none;
-        border-radius: 12px;
-        padding: 12px 20px;
-        font-size: 0.9rem;
-        font-weight: 700;
+        padding: 30px;
+        text-align: center;
         color: white;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
     }
-    .audio-pill:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+    .overlay-content {
+        max-width: 400px;
+        animation: fadeSlideUp 0.6s ease-out;
     }
-    .audio-pill.active {
-        background: #10B981;
-        pointer-events: none;
+    .btn-unlock {
+        background: #4F46E5;
+        color: white;
+        border: none;
+        padding: 18px 30px;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 1.1rem;
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+        margin-top: 20px;
+        width: 100%;
     }
+    .btn-unlock:active { transform: scale(0.95); }
 
     /* ─── Value Change Animation ─── */
     .value-changed {
@@ -189,44 +200,30 @@
 
     /* ─── Fade Slide ─── */
     @keyframes fadeSlideUp {
-        from { opacity: 0; transform: translateY(12px); }
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
-    }
-    
-    /* Ping Animation */
-    .ping-active {
-        position: relative;
-    }
-    .ping-active::after {
-        content: '';
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        background: inherit;
-        border-radius: inherit;
-        animation: ping-anim 1.5s infinite;
-        z-index: -1;
-        opacity: 0.5;
-    }
-    @keyframes ping-anim {
-        0% { transform: scale(1); opacity: 0.5; }
-        100% { transform: scale(1.5); opacity: 0; }
     }
 </style>
 @endpush
 
 @section('content')
-<div class="container container-app">
-
-    {{-- Audio Permission Pill --}}
-    <div class="text-center mb-3">
-        <button class="audio-pill ping-active" id="audioBanner" onclick="unlockAudio()">
-            <i class="bi bi-volume-up-fill"></i>
-            <span>AKTIFKAN SUARA & MONITORING</span>
+{{-- Overlay untuk iPhone / Android --}}
+<div id="audioOverlay">
+    <div class="overlay-content">
+        <div class="mb-4">
+            <i class="bi bi-bell-fill text-warning" style="font-size: 4rem;"></i>
+        </div>
+        <h3 class="fw-bold">Aktifkan Notifikasi Suara</h3>
+        <p class="opacity-75 mb-4">Agar Anda tetap mendengar panggilan antrian meskipun layar mati atau sedang membuka aplikasi lain.</p>
+        <button class="btn-unlock" onclick="unlockAllSystems()">
+            <i class="bi bi-volume-up-fill me-2"></i>
+            AKTIFKAN SEKARANG
         </button>
+        <p class="mt-4 small opacity-50">Khusus iPhone: Harap matikan Mode Hening (Silent Switch) di samping HP Anda.</p>
     </div>
+</div>
+
+<div class="container container-app">
 
     {{-- Main Ticket Card --}}
     <div class="ticket-card" id="tiketCard">
@@ -320,16 +317,16 @@
     <div class="text-center mt-4">
         <small class="text-muted" style="font-weight: 500;">
             <i class="bi bi-shield-check me-1 text-success"></i>
-            Sistem Antrian Real-time BPS
+            Monitoring Aktif BPS Tegal
         </small>
     </div>
 
 </div>
 
-{{-- Audio Elements for iPhone Support --}}
-<audio id="silentAudio" loop>
-    <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
-</audio>
+{{-- Video Wake Lock Trick (Cara paling ampuh jaga browser tetap hidup di iOS) --}}
+<video id="wakeLockVideo" loop muted playsinline style="display:none; width:1px; height:1px;">
+    <source src="data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pbmYxbXA0MgAAAAhmcmVlAAAAAG1kYXQ=" type="video/mp4">
+</video>
 
 @endsection
 
@@ -337,66 +334,62 @@
 <script>
     /**
      * ═══════════════════════════════════════════════════════════
-     *  NOTIFIKASI SUARA & BACKGROUND MONITORING (iOS Optimized)
+     *  NOTIFIKASI SUARA & BACKGROUND MONITORING (Pro iOS Fix)
      * ═══════════════════════════════════════════════════════════
      */
     const NotifikasiSuara = (function() {
         let audioCtx = null;
         let audioUnlocked = false;
-        const silentAudio = document.getElementById('silentAudio');
+        const wakeLockVideo = document.getElementById('wakeLockVideo');
 
         function unlock() {
             if (audioUnlocked) return;
             
             try {
-                // 1. Inisialisasi AudioContext (iOS butuh gesture)
+                // 1. AudioContext Prime
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if (audioCtx.state === 'suspended') audioCtx.resume();
 
-                // 2. Mainkan audio hening untuk menjaga proses tetap hidup di background
-                silentAudio.play().catch(e => console.log('Silent audio failed:', e));
+                // 2. SpeechSynthesis Prime (WAJIB di iPhone saat klik)
+                if ('speechSynthesis' in window) {
+                    const silentSpeech = new SpeechSynthesisUtterance("");
+                    window.speechSynthesis.speak(silentSpeech);
+                }
+
+                // 3. Video Wake Lock (Menjaga browser tidak suspend di iOS)
+                wakeLockVideo.play().catch(e => console.log('Video WakeLock failed:', e));
 
                 audioUnlocked = true;
 
-                // Update UI
-                const btn = document.getElementById('audioBanner');
-                if (btn) {
-                    btn.classList.remove('ping-active');
-                    btn.classList.add('active');
-                    btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> <span>MONITORING AKTIF</span>';
-                    setTimeout(() => {
-                        btn.parentElement.style.display = 'none';
-                    }, 2000);
-                }
+                // Hilangkan Overlay
+                document.getElementById('audioOverlay').style.display = 'none';
                 
-                // Minta izin notifikasi browser jika tersedia
-                if ("Notification" in window) {
-                    Notification.requestPermission();
-                }
+                // Minta izin notifikasi
+                if ("Notification" in window) Notification.requestPermission();
+                
             } catch(e) {
-                alert('Gagal mengaktifkan audio. Pastikan browser diizinkan bersuara.');
+                console.error('Unlock error:', e);
             }
         }
 
         function announceAndRing(kodeAntrian) {
             if (!audioUnlocked) return;
 
-            // Jika di background, coba kirim notifikasi browser
+            // Notifikasi Banner
             if (document.hidden && "Notification" in window && Notification.permission === "granted") {
-                new Notification("Panggilan Antrian!", {
+                new Notification("Giliran Anda!", {
                     body: "Nomor " + kodeAntrian + " silakan menuju loket.",
                     icon: "/favicon.ico"
                 });
             }
 
-            // 1. TTS Announcement
+            // 1. TTS
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const teks = `Nomor antrian ${kodeAntrian.split('').join(' ')}, silakan menuju loket pelayanan`;
                 const utterance = new SpeechSynthesisUtterance(teks);
                 utterance.lang = 'id-ID';
                 utterance.rate = 0.85;
-                utterance.volume = 1.0;
                 
                 utterance.onend = () => playRingtone();
                 utterance.onerror = () => playRingtone();
@@ -409,49 +402,38 @@
 
         function playRingtone() {
             if (!audioCtx) return;
-            
             const now = audioCtx.currentTime;
-            const duration = 15; // 15 Detik
-            
-            // Loop nada dering
-            for (let i = 0; i < duration * 2; i++) {
+            for (let i = 0; i < 30; i++) {
                 const start = now + (i * 0.5);
-                
-                // Nada 1 (Ding)
-                playTone(880, start, 0.15);
-                // Nada 2 (Dong)
-                playTone(660, start + 0.25, 0.15);
+                playTone(880, start, 0.15); // Ding
+                playTone(660, start + 0.25, 0.15); // Dong
             }
         }
 
         function playTone(freq, start, dur) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
             osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, start);
-            
             gain.gain.setValueAtTime(0, start);
-            gain.gain.linearRampToValueAtTime(0.6, start + 0.02);
+            gain.gain.linearRampToValueAtTime(0.7, start + 0.02);
             gain.gain.linearRampToValueAtTime(0, start + dur);
-            
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            
             osc.start(start);
             osc.stop(start + dur + 0.01);
         }
 
-        return { unlock, announceAndRing, isUnlocked: () => audioUnlocked };
+        return { unlock, announceAndRing };
     })();
 
-    function unlockAudio() {
+    function unlockAllSystems() {
         NotifikasiSuara.unlock();
     }
 
     /**
      * ═══════════════════════════════════════════════════════════
-     *  WEB WORKER POLLING (Mencegah Tidur di Background)
+     *  WEB WORKER POLLING (Robust Background)
      * ═══════════════════════════════════════════════════════════
      */
     (function() {
@@ -459,60 +441,47 @@
         const KODE_ANTRIAN = '{{ $antrian->kode_antrian }}';
         const API_URL = window.location.origin + '/api/antrian/status/' + ANTRIAN_ID;
         
-        // Buat Web Worker secara inline
         const workerCode = `
             let timer = null;
             self.onmessage = function(e) {
                 if (e.data === 'start') {
                     if (timer) clearInterval(timer);
                     timer = setInterval(() => {
-                        fetch(e.data.url || '${API_URL}')
+                        fetch('${API_URL}')
                             .then(res => res.json())
                             .then(data => self.postMessage(data))
-                            .catch(err => console.error('Worker fetch fail'));
+                            .catch(err => {});
                     }, 5000);
-                } else if (e.data === 'stop') {
-                    clearInterval(timer);
                 }
             };
         `;
         
         const blob = new Blob([workerCode], { type: 'application/javascript' });
         const worker = new Worker(URL.createObjectURL(blob));
-        
         let prevStatus = '{{ $antrian->status }}';
 
-        worker.onmessage = function(e) {
-            const data = e.data;
-            updateUI(data);
-        };
-
+        worker.onmessage = (e) => updateUI(e.data);
         worker.postMessage('start');
 
-        // Fungsi Update UI
         function updateUI(data) {
+            if(!data) return;
             document.getElementById('sedangDipanggil').textContent = data.sedang_dipanggil;
             document.getElementById('sisaAntrian').textContent = data.sisa_antrian;
             document.getElementById('estimasiWaktu').textContent = data.estimasi_menit + ' min';
             
-            // Progress Bar
             const pct = Math.min(Math.round((data.sudah_dilayani / (data.total_antrian_keperluan || 1)) * 100), 100);
             document.getElementById('progressBar').style.width = pct + '%';
             document.getElementById('progressLabel').textContent = data.sudah_dilayani + ' / ' + data.total_antrian_keperluan + ' dilayani';
 
-            // Cek Perubahan Status (Dipanggil)
             if (data.status === 'dipanggil' && prevStatus !== 'dipanggil') {
                 NotifikasiSuara.announceAndRing(KODE_ANTRIAN);
-                if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
             }
             
             updateStatusBanner(data.status);
             prevStatus = data.status;
 
-            // Tombol Antrian Baru
-            const btn = document.getElementById('btnAntrianBaru');
             if (data.status === 'selesai' || data.status === 'dilewati') {
-                btn.style.display = 'flex';
+                document.getElementById('btnAntrianBaru').style.display = 'flex';
             }
         }
 
@@ -520,22 +489,17 @@
             const el = document.getElementById('statusBanner');
             const txt = document.getElementById('statusText');
             el.className = 'status-banner status-' + status;
-            
-            if (status === 'dipanggil') {
-                txt.innerHTML = '<i class="bi bi-megaphone-fill me-1"></i> GILIRAN ANDA! Silakan ke Loket';
-            } else if (status === 'selesai') {
-                txt.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Selesai dilayani';
-            } else if (status === 'dilewati') {
-                txt.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> Antrian Dilewati';
-            } else {
-                txt.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Menunggu antrian...';
-            }
+            const cfg = {
+                'dipanggil': 'GILIRAN ANDA! Ke Loket',
+                'selesai': 'Selesai dilayani',
+                'dilewati': 'Antrian Dilewati',
+                'menunggu': 'Menunggu antrian...'
+            };
+            txt.innerHTML = cfg[status] || cfg['menunggu'];
         }
     })();
 
-    // Persistensi Lokal
     localStorage.setItem('antrian_id', '{{ $antrian->id }}');
-    
     function ambilAntrianBaru(e) {
         e.preventDefault();
         localStorage.removeItem('antrian_id');
@@ -543,4 +507,5 @@
     }
 </script>
 @endpush
+
 

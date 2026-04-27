@@ -328,7 +328,7 @@ class AntrianController extends Controller
         $dataHarian = Antrian::withTrashed()
             ->whereBetween('tanggal_antrian', [$mulai, $selesai])
             ->selectRaw("
-                tanggal_antrian,
+                DATE(tanggal_antrian) as tanggal,
                 COUNT(*) as total,
                 SUM(CASE WHEN keperluan = 'Konsultasi' THEN 1 ELSE 0 END) as konsultasi,
                 SUM(CASE WHEN keperluan = 'Pengaduan' THEN 1 ELSE 0 END) as pengaduan,
@@ -337,8 +337,8 @@ class AntrianController extends Controller
                 SUM(CASE WHEN status = 'menunggu' THEN 1 ELSE 0 END) as menunggu,
                 SUM(CASE WHEN status = 'dipanggil' THEN 1 ELSE 0 END) as dipanggil
             ")
-            ->groupBy('tanggal_antrian')
-            ->orderBy('tanggal_antrian', 'asc')
+            ->groupBy('tanggal')
+            ->orderBy('tanggal', 'asc')
             ->get();
 
         // Buat array lengkap (termasuk hari tanpa pengunjung = 0)
@@ -355,9 +355,8 @@ class AntrianController extends Controller
             $labels[] = $cursor->translatedFormat('d M');
 
             $row = $dataHarian->first(function ($item) use ($tanggal) {
-                $itemDate = $item->tanggal_antrian instanceof \Carbon\Carbon
-                    ? $item->tanggal_antrian->format('Y-m-d')
-                    : substr((string)$item->tanggal_antrian, 0, 10);
+                // Pastikan format tanggal string dibandingkan dengan benar
+                $itemDate = is_string($item->tanggal) ? $item->tanggal : $item->tanggal->format('Y-m-d');
                 return $itemDate === $tanggal;
             });
 

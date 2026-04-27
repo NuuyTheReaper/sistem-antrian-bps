@@ -127,7 +127,7 @@
                     <label class="form-label text-dark fw-semibold small">Email Address</label>
                     <div class="position-relative">
                         <i class="bi bi-envelope input-icon"></i>
-                        <input type="email" name="email" class="form-control form-control-login" placeholder="admin@bps.go.id" value="{{ old('email') }}" required autofocus>
+                        <input type="email" name="email" class="form-control form-control-login" placeholder="Masukkan Email" value="{{ old('email') }}" required autofocus>
                     </div>
                 </div>
 

@@ -153,55 +153,143 @@
         color: #DC2626;
     }
 
-    /* ─── Interaction Overlay ─── */
+    /* ─── Interaction Overlay (Modern Light Theme) ─── */
     #audioOverlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(15, 23, 42, 0.95);
-        backdrop-filter: blur(8px);
+        background: rgba(241, 245, 249, 0.7); /* slate-100 */
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         z-index: 9999;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 30px;
+        padding: 24px;
         text-align: center;
-        color: white;
+        color: #0f172a;
     }
-    .overlay-content {
-        max-width: 400px;
-        animation: fadeSlideUp 0.6s ease-out;
+    .overlay-card {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 28px;
+        padding: 40px 32px;
+        max-width: 420px;
+        width: 100%;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.02) inset;
+        animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    .overlay-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, var(--primary), var(--primary-dark), var(--primary));
+    }
+    .icon-wrapper {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        position: relative;
+        box-shadow: 0 0 30px rgba(245, 158, 11, 0.1);
+    }
+    .icon-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 2px solid rgba(245, 158, 11, 0.3);
+        animation: pulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulseRing {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.5); opacity: 0; }
+    }
+    .overlay-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+        background: linear-gradient(to right, var(--primary-dark, #1e3a8a), var(--primary, #3b82f6));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
+    }
+    .overlay-desc {
+        color: #64748b;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 32px;
     }
     .btn-unlock {
-        background: #4F46E5;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
         color: white;
         border: none;
-        padding: 18px 30px;
-        border-radius: 50px;
-        font-weight: 800;
-        font-size: 1.1rem;
-        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
-        margin-top: 20px;
+        padding: 16px 32px;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1.05rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255,255,255,0.15) inset;
         width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
-    .btn-unlock:active { transform: scale(0.95); }
-
-    /* ─── Value Change Animation ─── */
-    .value-changed {
-        animation: val-pop 0.4s ease;
+    .btn-unlock::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 50%; height: 100%;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent);
+        transform: skewX(-20deg);
+        animation: shimmer 3s infinite;
     }
-    @keyframes val-pop {
-        0% { transform: scale(1.2); color: var(--primary); }
-        100% { transform: scale(1); }
+    @keyframes shimmer {
+        0% { left: -100%; }
+        20% { left: 200%; }
+        100% { left: 200%; }
     }
-
-    /* ─── Fade Slide ─── */
-    @keyframes fadeSlideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+    .btn-unlock:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.3);
+    }
+    .btn-unlock:active { 
+        transform: translateY(1px) scale(0.98); 
+    }
+    .apple-hint {
+        display: flex;
+        align-items: flex-start;
+        text-align: left;
+        gap: 12px;
+        margin-top: 24px;
+        padding: 14px;
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 12px;
+        font-size: 0.8rem;
+        color: #64748b;
+        line-height: 1.4;
+    }
+    .apple-hint i {
+        color: #475569;
+        font-size: 1.2rem;
+        margin-top: -2px;
+    }
+    @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
     }
 </style>
 @endpush
@@ -209,17 +297,22 @@
 @section('content')
 {{-- Overlay untuk iPhone / Android --}}
 <div id="audioOverlay">
-    <div class="overlay-content">
-        <div class="mb-4">
-            <i class="bi bi-bell-fill text-warning" style="font-size: 4rem;"></i>
+    <div class="overlay-card">
+        <div class="icon-wrapper">
+            <i class="bi bi-bell-fill text-warning" style="font-size: 2.5rem; filter: drop-shadow(0 4px 6px rgba(245,158,11,0.3));"></i>
         </div>
-        <h3 class="fw-bold">Aktifkan Notifikasi Suara</h3>
-        <p class="opacity-75 mb-4">Agar Anda tetap mendengar panggilan antrian meskipun layar mati atau sedang membuka aplikasi lain.</p>
+        <h3 class="overlay-title">Izinkan Notifikasi</h3>
+        <p class="overlay-desc">Sistem memerlukan izin Anda untuk memutar suara panggilan antrian meskipun layar HP mati atau saat membuka aplikasi lain.</p>
+        
         <button class="btn-unlock" onclick="unlockAllSystems()">
-            <i class="bi bi-volume-up-fill me-2"></i>
-            AKTIFKAN SEKARANG
+            <i class="bi bi-volume-up-fill fs-5"></i>
+            <span>AKTIFKAN SEKARANG</span>
         </button>
-        <p class="mt-4 small opacity-50">Khusus iPhone: Harap matikan Mode Hening (Silent Switch) di samping HP Anda.</p>
+        
+        <div class="apple-hint">
+            <i class="bi bi-apple"></i>
+            <span><strong>Khusus iPhone:</strong> Pastikan Mode Hening (Silent Switch) di sisi samping HP dalam keadaan mati.</span>
+        </div>
     </div>
 </div>
 

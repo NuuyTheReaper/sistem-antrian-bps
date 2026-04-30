@@ -172,6 +172,20 @@
         text-align: center;
         color: #0f172a;
     }
+    #audioOverlay::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{{ asset("images/logo-bps-no-text.png") }}');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: min(85vw, 450px);
+        opacity: 0.9;
+        pointer-events: none;
+    }
     .overlay-card {
         background: rgba(255, 255, 255, 0.95);
         border: 1px solid rgba(255, 255, 255, 0.8);

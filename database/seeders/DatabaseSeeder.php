@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name'     => 'Admin BPS',
                 'password' => Hash::make('bpskotategal123'),
+                'role'     => 'admin',
             ]
         );
     }

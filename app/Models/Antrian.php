@@ -17,10 +17,17 @@ class Antrian extends Model
         'alamat',
         'keperluan',
         'nomor_hp',
+        'nik',
+        'jenis_kelamin',
+        'email',
+        'pekerjaan',
+        'pendidikan_terakhir',
         'status',
         'tanggal_antrian',
         'waktu_dipanggil',
         'waktu_selesai',
+        'petugas_id',
+        'catatan_petugas',
     ];
 
     protected $casts = [
@@ -34,11 +41,17 @@ class Antrian extends Model
     // ─── Aksesoris Data ──────────────────────────────────────
 
     /**
-     * Mendapatkan kode antrian berawalan P- (Pengaduan) atau K- (Konsultasi).
+     * Mendapatkan kode antrian berawalan P- (Pengaduan), K- (Konsultasi), S- (Rekomendasi Statistik), atau B- (Perpustakaan).
      */
     public function getKodeAntrianAttribute()
     {
-        $prefix = $this->keperluan === 'Konsultasi' ? 'K-' : 'P-';
+        $prefixes = [
+            'Konsultasi' => 'K-',
+            'Pengaduan' => 'P-',
+            'Rekomendasi Statistik' => 'S-',
+            'Perpustakaan' => 'B-',
+        ];
+        $prefix = $prefixes[$this->keperluan] ?? 'A-';
         return $prefix . str_pad($this->nomor_antrian, 3, '0', STR_PAD_LEFT);
     }
 
@@ -110,5 +123,13 @@ class Antrian extends Model
     {
         $sisa = static::sisaAntrianDidepan($nomorAntrian, $keperluan);
         return $sisa * 10; // setiap antrian diasumsikan 10 menit
+    }
+
+    /**
+     * Relasi ke Petugas yang melayani antrian ini.
+     */
+    public function petugas()
+    {
+        return $this->belongsTo(User::class, 'petugas_id');
     }
 }

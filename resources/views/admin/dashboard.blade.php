@@ -1,135 +1,94 @@
-{{-- ═══════════════════════════════════════════════════════════
-     DASHBOARD ADMIN / RESEPSIONIS
-     Manajemen antrian harian dengan aksi Panggil, Lewati, Selesai
-     ═══════════════════════════════════════════════════════════ --}}
-
 @extends('layouts.app')
 
-@section('title', 'Dashboard Admin - Sistem Antrian')
+@section('title', 'Dashboard Petugas - Sistem Antrian')
 
 @push('styles')
 <style>
-    .qr-container {
-        display: inline-block;
-        background: white;
-        padding: 1rem;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--border-color);
-    }
-    .qr-url {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        word-break: break-all;
-        padding: 0.5rem 0.75rem;
-        background: #F8FAFC;
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-md);
-        display: inline-block;
-        max-width: 100%;
-    }
-    .btn-print-qr {
-        background: #F1F5F9;
+    /* ─── Loket Panels ────────────────────────────────── */
+    .loket-panel {
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        transition: all 0.3s ease;
         border: none;
-        color: var(--text-main);
-        font-weight: 600;
-        border-radius: var(--radius-md);
-        padding: 6px 12px;
-        transition: all 0.2s ease;
-        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    .loket-panel:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    .loket-title {
+        font-weight: 800;
+        letter-spacing: 1px;
         font-size: 0.8rem;
     }
-    .btn-print-qr:hover {
-        background: var(--primary);
-        color: white;
-    }
-    
-    .stat-number {
-        font-size: 3.5rem;
+    .loket-nomor {
+        font-size: 3rem;
         font-weight: 900;
         line-height: 1;
-        letter-spacing: -1.5px;
+        letter-spacing: -1px;
     }
 
-    .table-custom {
-        margin-bottom: 0;
-    }
-    .table-custom th {
-        background-color: #F8FAFC;
-        border-bottom: 2px solid var(--border-color);
-        color: var(--text-muted);
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-        padding: 16px;
-    }
-    .table-custom td {
-        padding: 16px;
-        vertical-align: middle;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .btn-warning-custom {
-        background: #FEF3C7;
-        color: #D97706;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-    }
-    .btn-success-custom {
-        background: #D1FAE5;
-        color: #059669;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-    }
-    
+    /* ─── Badge Status ────────────────────────────────── */
     .badge-status {
-        padding: 6px 12px;
-        border-radius: 20px;
+        padding: 6px 14px;
+        border-radius: var(--radius-xl);
         font-size: 0.75rem;
         font-weight: 700;
-        letter-spacing: 0.5px;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
-    .badge-menunggu { background: #FEF3C7; color: #D97706; }
-    .badge-dipanggil { background: #E0E7FF; color: #4338CA; }
-    .badge-selesai { background: #D1FAE5; color: #059669; }
-    .badge-dilewati { background: #FEE2E2; color: #DC2626; }
+    .badge-menunggu { background: #EEF2FF; color: var(--primary); }
+    .badge-dipanggil { background: #ECFDF5; color: var(--success); }
+    .badge-selesai { background: #F1F5F9; color: var(--text-muted); }
+    .badge-dilewati { background: #FDF2F8; color: #DB2777; }
 
-    .loket-card {
-        border-top: 6px solid var(--primary);
-        transition: transform 0.2s;
+    /* ─── Stat Cards ──────────────────────────────────── */
+    .stat-card {
+        padding: 1.25rem 1.5rem;
         position: relative;
-        overflow: hidden;
     }
-    .loket-card:hover {
-        transform: translateY(-2px);
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 900;
+        line-height: 1.2;
     }
-    .loket-icon-bg {
+    .stat-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        font-weight: 700;
+    }
+    .stat-icon {
         position: absolute;
-        right: -20px;
-        bottom: -20px;
-        font-size: 8rem;
-        opacity: 0.03;
-        transform: rotate(-15deg);
-        pointer-events: none;
+        right: 1.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 2.2rem;
+        opacity: 0.15;
     }
-    .rekap-card {
+
+    /* ─── Search / Filter ──────────────────────────────── */
+    .search-wrapper {
         position: relative;
-        overflow: hidden;
-        border: 1px solid var(--border-color) !important;
-        box-shadow: none !important;
+        width: 100%;
+        max-width: 320px;
     }
-    .rekap-icon-bg {
+    .search-wrapper i {
         position: absolute;
-        right: -8px;
-        bottom: -8px;
-        font-size: 2.5rem;
-        opacity: 0.05;
-        transform: rotate(-15deg);
-        pointer-events: none;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+    }
+    .search-wrapper .form-control {
+        padding-left: 40px;
+        height: 38px;
+        font-size: 0.85rem;
+        border-radius: 20px;
     }
 </style>
 @endpush
@@ -140,455 +99,527 @@
     {{-- Header --}}
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="fw-bold mb-1" style="font-size: 1.5rem; letter-spacing: -0.5px; color: var(--text-main);">
+            <h1 class="h3 fw-bold mb-1">
+                <i class="bi bi-grid-fill me-2" style="color: var(--primary-light);"></i>
                 Dashboard Antrian
             </h1>
-            <p class="text-muted mb-0 fw-medium" style="font-size: 0.9rem;">
-                <i class="bi bi-calendar3 me-1"></i>
-                {{ \Carbon\Carbon::today()->translatedFormat('l, d F Y') }}
+            <p class="text-secondary mb-0">
+                <i class="bi bi-calendar-event me-1"></i>
+                Pelayanan BPS Kota Tegal • {{ Carbon\Carbon::today()->translatedFormat('d F Y') }}
             </p>
         </div>
-        <div class="d-flex gap-2 mt-3 mt-md-0 align-items-stretch">
-            <a href="{{ route('admin.daftar-manual') }}" class="btn-app" style="padding: 10px 20px; font-size: 0.9rem; border-radius: 12px; box-shadow: none;">
-                <i class="bi bi-person-plus-fill"></i> Daftar Manual
+        <div class="d-flex gap-2 mt-2 mt-md-0">
+            <a href="{{ route('admin.daftar-manual') }}" class="btn btn-gradient py-2 px-4" style="border-radius: var(--radius-lg); font-weight: 600;">
+                <i class="bi bi-person-plus-fill me-1"></i> Daftar Manual
             </a>
-            <form action="{{ route('admin.reset') }}" method="POST" class="m-0 d-inline-flex"
-                  onsubmit="return confirm('⚠️ PERHATIAN!\n\nAnda akan menghapus SEMUA data antrian hari ini.\nNomor antrian akan kembali ke 1.\n\nLanjutkan?');">
-                @csrf
-                <button type="submit" class="btn btn-danger" style="border-radius: 12px; font-weight: 600; padding: 10px 20px; font-size: 0.9rem; background: #EF4444; border: none;">
-                    <i class="bi bi-arrow-counterclockwise"></i> Reset
-                </button>
-            </form>
+            @if(Auth::user()->role === 'admin')
+                <form action="{{ route('admin.reset') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mereset semua data antrian HARI INI? Tindakan ini tidak dapat dibatalkan.')">
+                    @csrf
+                    <button type="submit" class="btn btn-danger-custom py-2 px-4" title="Reset semua antrian hari ini">
+                        <i class="bi bi-trash-fill me-1"></i> Reset Harian
+                    </button>
+                </form>
+            @endif
         </div>
     </div>
 
-    {{-- Main Layout: Kiri (Pemanggilan & Rekap) | Kanan (QR Code) --}}
-    <div class="row g-4 mb-4">
-        
-        {{-- KIRI: Pemanggilan & Rekap --}}
-        <div class="col-12 col-lg-8 d-flex flex-column">
-            
-            {{-- Pemanggilan --}}
-            <div class="row g-3 mb-4 flex-grow-1">
-
-            {{-- Loket 1: Konsultasi --}}
-                <div class="col-12 col-md-6">
-                    <div class="card-app loket-card p-4 text-center h-100 d-flex flex-column" style="background: rgba(79, 70, 229, 0.03);">
-                        <i class="bi bi-chat-dots loket-icon-bg" style="color: var(--primary);"></i>
-                        <h6 class="fw-bold mb-3" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
-                            <i class="bi bi-1-square-fill me-1 text-primary"></i> Konsultasi
-                        </h6>
-                        <div class="stat-number my-auto" id="statKonsultasi" style="color: var(--primary);">
-                            {{ $sedangDipanggilKonsultasi ? $sedangDipanggilKonsultasi->kode_antrian : '-' }}
-                        </div>
-                        <form action="{{ route('admin.panggil', 'Konsultasi') }}" method="POST" class="mt-auto">
-                            @csrf
-                            <button type="submit" class="btn-app w-100" style="border-radius: 12px; box-shadow: 0 4px 15px rgba(79,70,229,0.2);">
-                                <i class="bi bi-megaphone-fill"></i> Panggil Konsultasi
-                            </button>
-                        </form>
-                    </div>
+    {{-- PANEL PANGGIL ANTRIAN (4 Panels in a responsive row) --}}
+    <div class="row g-3 mb-4">
+        {{-- Panel Konsultasi --}}
+        <div class="col-sm-6 col-lg-3">
+            <div class="loket-panel card-app text-center h-100 d-flex flex-column justify-content-between">
+                <div class="loket-title py-2 text-white" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: var(--radius) var(--radius) 0 0;">
+                    LOKET 1: KONSULTASI
                 </div>
-                {{-- Loket 2: Pengaduan --}}
-                <div class="col-12 col-md-6">
-                    <div class="card-app loket-card p-4 text-center h-100 d-flex flex-column" style="border-top-color: #cc2a3a; background: rgba(204, 42, 58, 0.03);">
-                        <i class="bi bi-exclamation-octagon loket-icon-bg" style="color: #cc2a3a;"></i>
-                        <h6 class="fw-bold mb-3" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
-                            <i class="bi bi-2-square-fill me-1" style="color: #cc2a3a;"></i> Pengaduan
-                        </h6>
-                        <div class="stat-number my-auto" id="statPengaduan" style="color: #cc2a3a;">
-                            {{ $sedangDipanggilPengaduan ? $sedangDipanggilPengaduan->kode_antrian : '-' }}
-                        </div>
-                        <form action="{{ route('admin.panggil', 'Pengaduan') }}" method="POST" class="mt-auto">
-                            @csrf
-                            <button type="submit" class="btn-app w-100" style="background: #cc2a3a; border-color: #cc2a3a; box-shadow: 0 4px 15px rgba(204,42,58,0.3); border-radius: 12px;">
-                                <i class="bi bi-megaphone-fill"></i> Panggil Pengaduan
-                            </button>
-                        </form>
+                <div class="p-4 flex-grow-1 d-flex flex-column justify-content-center">
+                    <div class="loket-nomor mb-3 text-primary fw-bold" id="panelSedangDipanggilKonsultasi">
+                        {{ $sedangDipanggilKonsultasi ? $sedangDipanggilKonsultasi->kode_antrian : '-' }}
                     </div>
+                    <form action="{{ route('admin.panggil', 'Konsultasi') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-gradient w-100 py-2" style="border-radius: var(--radius-lg); font-weight: 600;">
+                            <i class="bi bi-megaphone-fill me-1"></i> Panggil
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Panel Pengaduan --}}
+        <div class="col-sm-6 col-lg-3">
+            <div class="loket-panel card-app text-center h-100 d-flex flex-column justify-content-between">
+                <div class="loket-title py-2 text-white" style="background: linear-gradient(135deg, #EF4444, #B91C1C); border-radius: var(--radius) var(--radius) 0 0;">
+                    LOKET 2: PENGADUAN
+                </div>
+                <div class="p-4 flex-grow-1 d-flex flex-column justify-content-center">
+                    <div class="loket-nomor mb-3 fw-bold" style="color: #EF4444;" id="panelSedangDipanggilPengaduan">
+                        {{ $sedangDipanggilPengaduan ? $sedangDipanggilPengaduan->kode_antrian : '-' }}
+                    </div>
+                    <form action="{{ route('admin.panggil', 'Pengaduan') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn w-100 py-2 text-white" style="background: linear-gradient(135deg, #EF4444, #B91C1C); border-radius: var(--radius-lg); font-weight: 600; border: none; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">
+                            <i class="bi bi-megaphone-fill me-1"></i> Panggil
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Panel Rekomendasi Statistik --}}
+        <div class="col-sm-6 col-lg-3">
+            <div class="loket-panel card-app text-center h-100 d-flex flex-column justify-content-between">
+                <div class="loket-title py-2 text-white" style="background: linear-gradient(135deg, #10B981, #047857); border-radius: var(--radius) var(--radius) 0 0;">
+                    LOKET 3: STATISTIK
+                </div>
+                <div class="p-4 flex-grow-1 d-flex flex-column justify-content-center">
+                    <div class="loket-nomor mb-3 fw-bold" style="color: #10B981;" id="panelSedangDipanggilStatistik">
+                        {{ $sedangDipanggilStatistik ? $sedangDipanggilStatistik->kode_antrian : '-' }}
+                    </div>
+                    <form action="{{ route('admin.panggil', 'Rekomendasi Statistik') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn w-100 py-2 text-white" style="background: linear-gradient(135deg, #10B981, #047857); border-radius: var(--radius-lg); font-weight: 600; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
+                            <i class="bi bi-megaphone-fill me-1"></i> Panggil
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Panel Perpustakaan --}}
+        <div class="col-sm-6 col-lg-3">
+            <div class="loket-panel card-app text-center h-100 d-flex flex-column justify-content-between">
+                <div class="loket-title py-2 text-white" style="background: linear-gradient(135deg, #F59E0B, #B45309); border-radius: var(--radius) var(--radius) 0 0;">
+                    LOKET 4: PERPUSTAKAAN
+                </div>
+                <div class="p-4 flex-grow-1 d-flex flex-column justify-content-center">
+                    <div class="loket-nomor mb-3 fw-bold" style="color: #F59E0B;" id="panelSedangDipanggilPerpustakaan">
+                        {{ $sedangDipanggilPerpustakaan ? $sedangDipanggilPerpustakaan->kode_antrian : '-' }}
+                    </div>
+                    <form action="{{ route('admin.panggil', 'Perpustakaan') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn w-100 py-2 text-white" style="background: linear-gradient(135deg, #F59E0B, #B45309); border-radius: var(--radius-lg); font-weight: 600; border: none; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);">
+                            <i class="bi bi-megaphone-fill me-1"></i> Panggil
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- RINGKASAN DATA HARI INI --}}
+    <div class="row g-3 mb-4">
+        {{-- Total Menunggu --}}
+        <div class="col-4">
+            <div class="card-app stat-card" style="border-top: 4px solid var(--primary); background: rgba(79, 70, 229, 0.03);">
+                <div class="stat-number text-primary" id="totalMenunggu">{{ $totalMenunggu }}</div>
+                <div class="stat-label">Menunggu</div>
+                <i class="bi bi-hourglass-split stat-icon text-primary"></i>
+            </div>
+        </div>
+        {{-- Total Selesai --}}
+        <div class="col-4">
+            <div class="card-app stat-card" style="border-top: 4px solid var(--success); background: rgba(16, 185, 129, 0.03);">
+                <div class="stat-number text-success" id="totalSelesai">{{ $totalSelesai }}</div>
+                <div class="stat-label">Selesai</div>
+                <i class="bi bi-check-circle stat-icon text-success"></i>
+            </div>
+        </div>
+        {{-- Total Dilewati --}}
+        <div class="col-4">
+            <div class="card-app stat-card" style="border-top: 4px solid #DB2777; background: rgba(219, 39, 119, 0.03);">
+                <div class="stat-number text-danger" style="color: #DB2777 !important;" id="totalDilewati">{{ $totalDilewati }}</div>
+                <div class="stat-label">Dilewati</div>
+                <i class="bi bi-x-circle stat-icon" style="color: #DB2777;"></i>
+            </div>
+        </div>
+    </div>
+
+    {{-- DAFTAR ANTRIAN HARI INI --}}
+    <div class="card-app p-4" style="min-height: 400px;">
+        
+        {{-- Toolbar / Filter --}}
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <h5 class="fw-bold mb-0 text-main flex-grow-1">
+                <i class="bi bi-list-stars me-2 text-primary"></i>
+                Daftar Antrian Hari Ini
+            </h5>
+            
+            <div class="d-flex flex-wrap gap-2 align-items-center w-100 w-md-auto">
+                {{-- Search --}}
+                <div class="search-wrapper">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="searchKeyword" class="form-control" placeholder="Cari nama atau kode...">
                 </div>
                 
-            </div>
-
-            {{-- Rekap Harian (4 Kolom) --}}
-            <div class="row g-3 mt-auto">
-                <div class="col-6 col-md-3">
-                    <div class="card-app p-3 text-center h-100 d-flex flex-column justify-content-center rekap-card" style="background: rgba(245, 158, 11, 0.03);">
-                        <i class="bi bi-hourglass-split rekap-icon-bg" style="color: var(--warning);"></i>
-                        <div class="fw-bold" id="totalMenunggu" style="color: var(--warning); font-size: 1.8rem; line-height: 1;">{{ $totalMenunggu }}</div>
-                        <small class="text-muted fw-bold mt-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Menunggu</small>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="card-app p-3 text-center h-100 d-flex flex-column justify-content-center rekap-card" style="background: rgba(16, 185, 129, 0.03);">
-                        <i class="bi bi-check-circle rekap-icon-bg" style="color: var(--secondary);"></i>
-                        <div class="fw-bold" id="totalSelesai" style="color: var(--secondary); font-size: 1.8rem; line-height: 1;">{{ $totalSelesai }}</div>
-                        <small class="text-muted fw-bold mt-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Selesai</small>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="card-app p-3 text-center h-100 d-flex flex-column justify-content-center rekap-card" style="background: rgba(239, 68, 68, 0.03);">
-                        <i class="bi bi-x-circle rekap-icon-bg" style="color: var(--danger);"></i>
-                        <div class="fw-bold" id="totalDilewati" style="color: var(--danger); font-size: 1.8rem; line-height: 1;">{{ $totalDilewati }}</div>
-                        <small class="text-muted fw-bold mt-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Dilewati</small>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="card-app p-3 text-center h-100 d-flex flex-column justify-content-center rekap-card" style="background: rgba(79, 70, 229, 0.03);">
-                        <i class="bi bi-people rekap-icon-bg" style="color: var(--primary);"></i>
-                        <div class="fw-bold" id="totalPengunjung" style="color: var(--primary); font-size: 1.8rem; line-height: 1;">{{ $antrians->count() }}</div>
-                        <small class="text-muted fw-bold mt-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Total</small>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        {{-- KANAN: QR Code --}}
-        <div class="col-12 col-lg-4">
-            <div class="card-app h-100 d-flex flex-column m-0">
-                <div class="p-3 px-4 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid var(--border-color); background: #fdfdfd;">
-                    <h6 class="mb-0 fw-bold" style="color: var(--text-main);">
-                        <i class="bi bi-qr-code me-2 text-primary"></i>
-                        QR Pendaftaran
-                    </h6>
-                    <button class="btn-print-qr" onclick="printQR()" title="Cetak QR Code">
-                        <i class="bi bi-printer"></i>
-                    </button>
-                </div>
-                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center p-4 text-center">
-                    <div class="qr-container mx-auto mb-3" id="qrCodeContainer"></div>
-                    <div class="qr-url mt-2 mx-auto fw-medium">
-                        <i class="bi bi-link-45deg"></i>
-                        <span id="qrUrlText"></span>
-                    </div>
-                    <small class="text-muted mt-3" style="font-size: 0.75rem;">
-                        Arahkan pengunjung untuk scan QR Code ini.
-                    </small>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    {{-- Tabel Daftar Antrian --}}
-    <div class="card-app">
-        <div class="p-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-3" style="border-bottom: 1px solid var(--border-color); background: #fdfdfd;">
-            <h6 class="mb-0 fw-bold" style="color: var(--text-main);">
-                <i class="bi bi-list-ol me-2 text-primary"></i>
-                Daftar Antrian Hari Ini
-            </h6>
-            
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                {{-- Search --}}
-                <div class="position-relative">
-                    <i class="bi bi-search position-absolute text-muted" style="left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.8rem;"></i>
-                    <input type="text" id="searchAntrian" class="form-control form-control-sm ps-5" placeholder="Cari Nama / No..." style="border-radius: 20px; width: 180px; font-size: 0.8rem; border-color: var(--border-color);">
-                </div>
-
-                {{-- Status Filter --}}
+                {{-- Filter Status --}}
                 <select id="filterStatus" class="form-select form-select-sm" style="border-radius: 20px; width: 150px; font-size: 0.8rem; border-color: var(--border-color); cursor: pointer;">
                     <option value="semua">Semua Status</option>
-                    <option value="belum">Belum Terpanggil</option>
-                    <option value="terpanggil">Terpanggil</option>
                     <option value="menunggu">Menunggu</option>
                     <option value="dipanggil">Sedang Dipanggil</option>
                     <option value="selesai">Selesai</option>
                     <option value="dilewati">Dilewati</option>
                 </select>
 
-                {{-- Layanan Filter --}}
-                <select id="filterLayanan" class="form-select form-select-sm" style="border-radius: 20px; width: 140px; font-size: 0.8rem; border-color: var(--border-color); cursor: pointer;">
+                {{-- Filter Keperluan --}}
+                <select id="filterKeperluan" class="form-select form-select-sm" style="border-radius: 20px; width: 150px; font-size: 0.8rem; border-color: var(--border-color); cursor: pointer;">
                     <option value="semua">Semua Layanan</option>
                     <option value="Konsultasi">Konsultasi</option>
                     <option value="Pengaduan">Pengaduan</option>
+                    <option value="Rekomendasi Statistik">Rekomendasi Statistik</option>
+                    <option value="Perpustakaan">Perpustakaan</option>
                 </select>
             </div>
         </div>
 
+        {{-- Table --}}
         <div class="table-responsive">
-            <table class="table table-custom">
+            <table class="table table-app align-middle" id="tableAntrian">
                 <thead>
                     <tr>
-                        <th class="text-center" style="width: 80px;">No.</th>
-                        <th>Nama</th>
-                        <th>Keperluan</th>
-                        <th>No. HP</th>
-                        <th class="text-center">Status</th>
-                        <th class="text-center" style="width: 220px;">Aksi</th>
+                        <th width="10%">KODE</th>
+                        <th width="20%">PENGUNJUNG</th>
+                        <th width="15%">KONTAK</th>
+                        <th width="20%">LAYANAN</th>
+                        <th width="15%">STATUS</th>
+                        <th width="20%" class="text-end">AKSI</th>
                     </tr>
                 </thead>
-                <tbody id="tableAntrianBody">
+                <tbody>
                     @forelse($antrians as $item)
-                        <tr style="{{ $item->status === 'dipanggil' ? 'background: #EEF2FF;' : '' }}">
-
-                            <td class="text-center fw-bold" style="font-size: 1.2rem; color: var(--primary-dark);">
-                                {{ $item->kode_antrian }}
+                        <tr class="antrian-row" 
+                            data-nama="{{ strtolower($item->nama) }}" 
+                            data-kode="{{ strtolower($item->kode_antrian) }}" 
+                            data-status="{{ $item->status }}"
+                            data-keperluan="{{ $item->keperluan }}">
+                            <td>
+                                <div class="badge-kode-antrian fs-6 py-2 px-3 fw-bold" 
+                                     style="border-radius: 12px; display: inline-block;">
+                                    {{ $item->kode_antrian }}
+                                </div>
                             </td>
-
                             <td>
                                 <div class="fw-bold" style="color: var(--text-main);">{{ $item->nama }}</div>
+                                @if($item->nik)
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">NIK: {{ $item->nik }}</small>
+                                @endif
                                 <small class="text-muted" style="font-size: 0.75rem; font-weight: 500;">{{ Str::limit($item->alamat, 40) }}</small>
                             </td>
-
                             <td>
-                                <span class="badge rounded-pill px-2 py-1"
-                                      style="background: {{ $item->keperluan === 'Konsultasi' ? '#EEF2FF' : '#FEE2E2' }};
-                                             color: {{ $item->keperluan === 'Konsultasi' ? '#4338CA' : '#DC2626' }};
-                                             font-size: 0.75rem; font-weight: 600;">
-                                    {{ $item->keperluan }}
-                                </span>
+                                <div class="fw-medium" style="font-size: 0.85rem;">
+                                    <i class="bi bi-whatsapp text-success me-1"></i>{{ $item->nomor_hp }}
+                                </div>
+                                @if($item->email)
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">{{ $item->email }}</small>
+                                @endif
                             </td>
-
-                            <td style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);">{{ $item->nomor_hp }}</td>
-
-                            <td class="text-center">
+                            <td>
+                                <div class="fw-bold" style="font-size: 0.85rem; color: var(--text-main);">{{ $item->keperluan }}</div>
+                                @if($item->petugas)
+                                    <small class="text-success d-block fw-semibold" style="font-size: 0.72rem;">
+                                        <i class="bi bi-person-fill-check me-1"></i>Petugas: {{ $item->petugas->name }}
+                                    </small>
+                                @endif
+                            </td>
+                            <td>
                                 <span class="badge-status badge-{{ $item->status }}">
-                                    {{ ucfirst($item->status) }}
+                                    @if($item->status === 'menunggu')
+                                        <i class="bi bi-hourglass-split"></i> Menunggu
+                                    @elseif($item->status === 'dipanggil')
+                                        <i class="bi bi-volume-up-fill"></i> Dipanggil
+                                    @elseif($item->status === 'selesai')
+                                        <i class="bi bi-check-circle-fill"></i> Selesai
+                                    @elseif($item->status === 'dilewati')
+                                        <i class="bi bi-exclamation-circle-fill"></i> Dilewati
+                                    @endif
                                 </span>
                             </td>
-
-                            <td class="text-center">
+                            <td class="text-end">
                                 @if($item->status === 'menunggu')
-                                    <span class="text-muted" style="font-size: 0.8rem; font-weight: 500;">
-                                        <i class="bi bi-clock"></i> Menunggu
-                                    </span>
+                                    <form action="{{ route('admin.lewati', $item->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn-danger-custom px-3 py-1" title="Lewati antrian">
+                                            <i class="bi bi-arrow-right-short"></i> Lewati
+                                        </button>
+                                    </form>
                                 @elseif($item->status === 'dipanggil')
-                                    <div class="d-flex gap-2 justify-content-center">
-                                        <form action="{{ route('admin.lewati', $item->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn-warning-custom px-3 py-1" title="Lewati / Tunda">
-                                                <i class="bi bi-skip-forward-fill"></i> Skip
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('admin.selesai', $item->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn-success-custom px-3 py-1" title="Selesai dilayani">
-                                                <i class="bi bi-check-lg"></i> Selesai
-                                            </button>
-                                        </form>
+                                    <button type="button" class="btn-success-custom px-3 py-1" onclick="showSelesaiModal({{ $item->id }})" title="Selesai dilayani">
+                                        <i class="bi bi-check-lg"></i> Selesai
+                                    </button>
+                                    <form action="{{ route('admin.lewati', $item->id) }}" method="POST" class="d-inline ms-1">
+                                        @csrf
+                                        <button type="submit" class="btn-danger-custom px-3 py-1" title="Lewati antrian">
+                                            <i class="bi bi-arrow-right-short"></i> Lewati
+                                        </button>
+                                    </form>
+                                @else
+                                    <div class="text-end">
+                                        <span class="text-muted fs-7 fw-semibold"><i class="bi bi-check2-all me-1 text-success"></i> Selesai</span>
+                                        @if($item->catatan_petugas)
+                                            <small class="text-muted d-block text-truncate" style="max-width: 150px; font-size: 0.65rem;" title="{{ $item->catatan_petugas }}">
+                                                "{{ $item->catatan_petugas }}"
+                                            </small>
+                                        @endif
                                     </div>
-                                @elseif($item->status === 'selesai')
-                                    <span class="text-success fw-bold" style="font-size: 0.85rem;">
-                                        <i class="bi bi-check-circle-fill"></i> Selesai
-                                    </span>
-                                @elseif($item->status === 'dilewati')
-                                    <span class="text-danger fw-bold" style="font-size: 0.85rem;">
-                                        <i class="bi bi-skip-forward-circle-fill"></i> Dilewati
-                                    </span>
                                 @endif
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="text-center py-5">
-                                <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
-                                <span class="text-muted fw-medium">Belum ada antrian hari ini</span>
+                        <tr id="emptyRow">
+                            <td colspan="6" class="text-center py-5 text-secondary">
+                                <i class="bi bi-inbox fs-2 mb-2 d-block opacity-50"></i>
+                                <span class="fw-semibold">Belum ada data antrian hari ini.</span>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+
     </div>
-    
+
+</div>
+
+{{-- Modal Selesai Pelayanan --}}
+<div class="modal fade" id="selesaiModal" tabindex="-1" aria-labelledby="selesaiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-color); padding: 20px;">
+                <h5 class="modal-title fw-bold" id="selesaiModalLabel">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i> Selesaikan Pelayanan
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formSelesaiModal" method="POST">
+                @csrf
+                <div class="modal-body" style="padding: 24px;">
+                    <div class="mb-3">
+                        <label for="catatan_petugas" class="form-label fw-semibold" style="color: var(--text-main);">Catatan Pelayanan (Opsional)</label>
+                        <textarea class="form-control" name="catatan_petugas" id="catatan_petugas" rows="3" placeholder="Masukkan catatan pelayanan, saran, atau hasil konsultasi pengunjung..." style="border-radius: 12px; font-size: 0.9rem; border-color: var(--border-color);"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-color); padding: 16px 20px;">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 10px; font-weight: 600; font-size: 0.9rem;">Batal</button>
+                    <button type="submit" class="btn btn-success" style="border-radius: 10px; font-weight: 600; font-size: 0.9rem; background: #10B981; border: none; padding: 8px 20px;">Simpan & Selesai</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
-{{-- QR Code Library (CDN) --}}
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
-    (function() {
-        const daftarUrl = '{{ route("antrian.daftar") }}';
-        const container = document.getElementById('qrCodeContainer');
-        const urlText   = document.getElementById('qrUrlText');
+    // ═══════════════════════════════════════════════════════════
+    //  GLOBAL VARIABLES & TOKEN
+    // ═══════════════════════════════════════════════════════════
+    const baseUrl = "{{ url('/') }}";
+    const csrf    = "{{ csrf_token() }}";
 
-        if (container) {
-            new QRCode(container, {
-                text: daftarUrl,
-                width: 180,
-                height: 180,
-                colorDark: '#0F172A',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H
-            });
-        }
-        if (urlText) urlText.textContent = daftarUrl;
-    })();
-
-    function printQR() {
-        const container = document.getElementById('qrCodeContainer');
-        if (!container) return;
-        let imgSrc = '';
-        const imgEl = container.querySelector('img');
-        const canvasEl = container.querySelector('canvas');
-
-        if (canvasEl) {
-            imgSrc = canvasEl.toDataURL('image/png');
-        } else if (imgEl && imgEl.src) {
-            imgSrc = imgEl.src;
-        }
-
-        if (!imgSrc || imgSrc.startsWith('data:image/gif;base64,R0lGOD')) {
-            alert('QR Code belum siap. Silakan tunggu sebentar.');
-            return;
-        }
-
-        const printWindow = window.open('', '_blank', 'width=600,height=600');
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Cetak QR Code</title>
-                <style>
-                    @page { size: A4 portrait; margin: 0; }
-                    * { margin: 0; padding: 0; box-sizing: border-box; }
-                    html, body { width: 100%; height: 100%; background: white; font-family: sans-serif; }
-                    body { display: flex; flex-direction: column; justify-content: center; align-items: center; }
-                    h2 { margin-bottom: 20px; color: #0F172A; }
-                    img { width: 300px; height: 300px; display: block; margin-bottom: 20px; }
-                    p { color: #64748B; font-size: 14px; }
-                </style>
-            </head>
-            <body>
-                <h2>Scan QR Pendaftaran Antrian</h2>
-                <img src="${imgSrc}" alt="QR Code" />
-                <p>BPS Tegal</p>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-        setTimeout(function() {
-            printWindow.focus();
-            printWindow.print();
-            printWindow.close();
-        }, 500);
+    // ═══════════════════════════════════════════════════════════
+    //  FUNGSI TRIGGER MODAL SELESAI
+    // ═══════════════════════════════════════════════════════════
+    function showSelesaiModal(id) {
+        const form = document.getElementById('formSelesaiModal');
+        form.action = `${baseUrl}/admin/antrian/selesai/${id}`;
+        document.getElementById('catatan_petugas').value = '';
+        
+        const modal = new bootstrap.Modal(document.getElementById('selesaiModal'));
+        modal.show();
     }
-</script>
-<script>
-    let filterStatusValue = 'semua';
-    let filterLayananValue = 'semua';
-    let searchQuery = '';
-    const baseUrl = '{{ url("/") }}';
-    
-    // State untuk melacak nomor terakhir yang dipanggil agar tidak double suara
-    let lastSpokenKonsultasi = '{{ $sedangDipanggilKonsultasi ? $sedangDipanggilKonsultasi->kode_antrian : "" }}';
-    let lastSpokenPengaduan = '{{ $sedangDipanggilPengaduan ? $sedangDipanggilPengaduan->kode_antrian : "" }}';
 
-    // Inisialisasi data awal dari Blade agar filter langsung jalan tanpa nunggu polling
-    let currentAntrianData = @json($antrians);
+    // ═══════════════════════════════════════════════════════════
+    //  AJAX POLLING (Melakukan refresh data setiap 4 detik)
+    // ═══════════════════════════════════════════════════════════
+    let isSearchActive = false;
 
-    document.getElementById('filterStatus').addEventListener('change', (e) => { filterStatusValue = e.target.value; updateTable(); });
-    document.getElementById('filterLayanan').addEventListener('change', (e) => { filterLayananValue = e.target.value; updateTable(); });
-    document.getElementById('searchAntrian').addEventListener('input', (e) => { searchQuery = e.target.value.toLowerCase(); updateTable(); });
+    // Detect search & filter focus
+    document.getElementById('searchKeyword').addEventListener('input', () => { isSearchActive = true; runSearch(); });
+    document.getElementById('filterStatus').addEventListener('change', () => { isSearchActive = true; runSearch(); });
+    document.getElementById('filterKeperluan').addEventListener('change', () => { isSearchActive = true; runSearch(); });
 
-    function updateTable() {
-        let tbody = document.getElementById('tableAntrianBody');
-        if (!tbody) return;
+    setInterval(async () => {
+        // Jangan timpa render jika user sedang mengetik pencarian/filter aktif
+        const searchInput = document.getElementById('searchKeyword').value.trim();
+        const filterVal = document.getElementById('filterStatus').value;
+        const filterKepVal = document.getElementById('filterKeperluan').value;
+        
+        if (searchInput !== "" || filterVal !== "semua" || filterKepVal !== "semua") {
+            isSearchActive = true;
+        } else {
+            isSearchActive = false;
+        }
 
-        let filtered = currentAntrianData.filter(item => {
-            // Filter Layanan
-            if (filterLayananValue !== 'semua' && item.keperluan !== filterLayananValue) return false;
+        if (isSearchActive) return;
 
-            // Filter Status (Gunakan lowercase agar aman di hosting)
-            const itemStatus = item.status.toLowerCase();
-            if (filterStatusValue === 'belum' && itemStatus !== 'menunggu') return false;
-            if (filterStatusValue === 'terpanggil' && itemStatus === 'menunggu') return false;
-            if (filterStatusValue !== 'semua' && filterStatusValue !== 'belum' && filterStatusValue !== 'terpanggil' && itemStatus !== filterStatusValue.toLowerCase()) return false;
+        try {
+            const res = await fetch(`{{ route('api.admin.data') }}`);
+            if (!res.ok) throw new Error('Network failed');
+            const data = await res.json();
 
-            // Search
-            const nameMatch = item.nama ? item.nama.toLowerCase().includes(searchQuery) : false;
-            const codeMatch = item.kode_antrian ? item.kode_antrian.toLowerCase().includes(searchQuery) : false;
-            if (searchQuery && !nameMatch && !codeMatch) return false;
+            // 1. Update stats counter
+            document.getElementById('totalMenunggu').textContent = data.total_menunggu;
+            document.getElementById('totalSelesai').textContent  = data.total_selesai;
+            document.getElementById('totalDilewati').textContent  = data.total_dilewati;
 
-            return true;
-        });
+            // 2. Update panel nomor antrian sedang dipanggil
+            document.getElementById('panelSedangDipanggilKonsultasi').textContent = data.sedang_dipanggil_konsultasi;
+            document.getElementById('panelSedangDipanggilPengaduan').textContent = data.sedang_dipanggil_pengaduan;
+            document.getElementById('panelSedangDipanggilStatistik').textContent = data.sedang_dipanggil_statistik;
+            document.getElementById('panelSedangDipanggilPerpustakaan').textContent = data.sedang_dipanggil_perpustakaan;
 
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5"><i class="bi bi-search fs-1 text-muted d-block mb-2"></i><span class="text-muted fw-medium">Data tidak ditemukan</span></td></tr>`;
+            // 3. Update daftar tabel
+            updateTable(data.antrians);
+        } catch (error) {
+            console.error('Polling error:', error);
+        }
+    }, 4000);
+
+    // ═══════════════════════════════════════════════════════════
+    //  UPDATE TABLE HTML SECARA DINAMIS
+    // ═══════════════════════════════════════════════════════════
+    function updateTable(antrians) {
+        const tbody = document.querySelector('#tableAntrian tbody');
+        
+        if (antrians.length === 0) {
+            tbody.innerHTML = `
+                <tr id="emptyRow">
+                    <td colspan="6" class="text-center py-5 text-secondary">
+                        <i class="bi bi-inbox fs-2 mb-2 d-block opacity-50"></i>
+                        <span class="fw-semibold">Belum ada data antrian hari ini.</span>
+                    </td>
+                </tr>
+            `;
             return;
         }
 
         let html = '';
-        const csrfEl = document.querySelector('meta[name="csrf-token"]');
-        const csrf = csrfEl ? csrfEl.content : '';
+        antrians.forEach(item => {
+            let statusBadge = '';
+            if (item.status === 'menunggu') {
+                statusBadge = '<span class="badge-status badge-menunggu"><i class="bi bi-hourglass-split"></i> Menunggu</span>';
+            } else if (item.status === 'dipanggil') {
+                statusBadge = '<span class="badge-status badge-dipanggil"><i class="bi bi-volume-up-fill"></i> Dipanggil</span>';
+            } else if (item.status === 'selesai') {
+                statusBadge = '<span class="badge-status badge-selesai"><i class="bi bi-check-circle-fill"></i> Selesai</span>';
+            } else if (item.status === 'dilewati') {
+                statusBadge = '<span class="badge-status badge-dilewati"><i class="bi bi-exclamation-circle-fill"></i> Dilewati</span>';
+            }
 
-        filtered.forEach(item => {
-            const rowStyle = item.status.toLowerCase() === 'dipanggil' ? 'background: #EEF2FF;' : '';
-            const kpColor = item.keperluan === 'Konsultasi' ? '#EEF2FF' : '#FEE2E2';
-            const kpTextC = item.keperluan === 'Konsultasi' ? '#4338CA' : '#DC2626';
-            const statusU = item.status.charAt(0).toUpperCase() + item.status.slice(1);
-            
-            let aksi = '';
-            const sLower = item.status.toLowerCase();
-            if(sLower === 'menunggu') {
-                aksi = `<span class="text-muted" style="font-size: 0.8rem; font-weight: 500;"><i class="bi bi-clock"></i> Menunggu</span>`;
-            } else if(sLower === 'dipanggil') {
-                aksi = `
-                <div class="d-flex gap-2 justify-content-center">
+            let actions = '';
+            if (item.status === 'menunggu') {
+                actions = `
                     <form action="${baseUrl}/admin/antrian/lewati/${item.id}" method="POST" class="d-inline">
                         <input type="hidden" name="_token" value="${csrf}">
-                        <button type="submit" class="btn-warning-custom px-3 py-1" title="Lewati / Tunda"><i class="bi bi-skip-forward-fill"></i> Skip</button>
+                        <button type="submit" class="btn-danger-custom px-3 py-1" title="Lewati antrian"><i class="bi bi-arrow-right-short"></i> Lewati</button>
                     </form>
-                    <form action="${baseUrl}/admin/antrian/selesai/${item.id}" method="POST" class="d-inline">
+                `;
+            } else if (item.status === 'dipanggil') {
+                actions = `
+                    <button type="button" class="btn-success-custom px-3 py-1" onclick="showSelesaiModal(${item.id})" title="Selesai dilayani"><i class="bi bi-check-lg"></i> Selesai</button>
+                    <form action="${baseUrl}/admin/antrian/lewati/${item.id}" method="POST" class="d-inline ms-1">
                         <input type="hidden" name="_token" value="${csrf}">
-                        <button type="submit" class="btn-success-custom px-3 py-1" title="Selesai dilayani"><i class="bi bi-check-lg"></i> Selesai</button>
+                        <button type="submit" class="btn-danger-custom px-3 py-1" title="Lewati antrian"><i class="bi bi-arrow-right-short"></i> Lewati</button>
                     </form>
-                </div>`;
-            } else if(sLower === 'selesai') {
-                aksi = `<span class="text-success fw-bold" style="font-size: 0.85rem;"><i class="bi bi-check-circle-fill"></i> Selesai</span>`;
-            } else if(sLower === 'dilewati') {
-                aksi = `<span class="text-danger fw-bold" style="font-size: 0.85rem;"><i class="bi bi-skip-forward-circle-fill"></i> Dilewati</span>`;
+                `;
+            } else {
+                let noteHtml = item.catatan_petugas ? `<small class="text-muted d-block text-truncate" style="max-width: 150px; font-size: 0.65rem;" title="${item.catatan_petugas}">"${item.catatan_petugas}"</small>` : '';
+                actions = `
+                    <div class="text-end">
+                        <span class="text-muted fs-7 fw-semibold"><i class="bi bi-check2-all me-1 text-success"></i> Selesai</span>
+                        ${noteHtml}
+                    </div>
+                `;
             }
-            
-            let addr = item.alamat || '';
-            if(addr.length > 40) addr = addr.substring(0, 40) + '...';
-            
+
+            let nikHtml = item.nik ? `<small class="text-muted d-block" style="font-size: 0.72rem;">NIK: ${item.nik}</small>` : '';
+            let emailHtml = item.email ? `<small class="text-muted d-block" style="font-size: 0.72rem;">${item.email}</small>` : '';
+            let petugasHtml = item.petugas ? `<small class="text-success d-block fw-semibold" style="font-size: 0.72rem;"><i class="bi bi-person-fill-check me-1"></i>Petugas: ${item.petugas.name}</small>` : '';
+
             html += `
-                <tr style="${rowStyle}">
-                    <td class="text-center fw-bold" style="font-size: 1.2rem; color: var(--primary-dark);">${item.kode_antrian}</td>
-                    <td><div class="fw-bold" style="color: var(--text-main);">${item.nama}</div><small class="text-muted" style="font-size: 0.75rem; font-weight: 500;">${addr}</small></td>
-                    <td><span class="badge rounded-pill px-2 py-1" style="background: ${kpColor}; color: ${kpTextC}; font-size: 0.75rem; font-weight: 600;">${item.keperluan}</span></td>
-                    <td style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);">${item.nomor_hp}</td>
-                    <td class="text-center"><span class="badge-status badge-${sLower}">${statusU}</span></td>
-                    <td class="text-center">${aksi}</td>
+                <tr class="antrian-row" 
+                    data-nama="${item.nama.toLowerCase()}" 
+                    data-kode="${item.kode_antrian.toLowerCase()}" 
+                    data-status="${item.status}"
+                    data-keperluan="${item.keperluan}">
+                    <td>
+                        <div class="badge-kode-antrian fs-6 py-2 px-3 fw-bold" style="border-radius: 12px; display: inline-block;">
+                            ${item.kode_antrian}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="fw-bold" style="color: var(--text-main);">${item.nama}</div>
+                        ${nikHtml}
+                        <small class="text-muted" style="font-size: 0.75rem; font-weight: 500;">${item.alamat.substring(0, 40)}</small>
+                    </td>
+                    <td>
+                        <div class="fw-medium" style="font-size: 0.85rem;"><i class="bi bi-whatsapp text-success me-1"></i>${item.nomor_hp}</div>
+                        ${emailHtml}
+                    </td>
+                    <td>
+                        <div class="fw-bold" style="font-size: 0.85rem; color: var(--text-main);">${item.keperluan}</div>
+                        ${petugasHtml}
+                    </td>
+                    <td>${statusBadge}</td>
+                    <td class="text-end">${actions}</td>
                 </tr>
             `;
         });
+
         tbody.innerHTML = html;
+        runSearch(); // Apply filters immediately after dynamic update
     }
 
-    // Panggil updateTable pertama kali
-    updateTable();
+    // ═══════════════════════════════════════════════════════════
+    //  PENCARIAN DAN FILTER CLIENT-SIDE
+    // ═══════════════════════════════════════════════════════════
+    function runSearch() {
+        const query     = document.getElementById('searchKeyword').value.toLowerCase().trim();
+        const statusVal = document.getElementById('filterStatus').value;
+        const kepVal    = document.getElementById('filterKeperluan').value;
+        const rows      = document.querySelectorAll('.antrian-row');
+        let visibleRows = 0;
 
-    setInterval(function() {
-        fetch('{{ route("api.admin.data") }}')
-            .then(res => res.json())
-            .then(data => {
-                const spKonsultasi = document.getElementById('statKonsultasi');
-                const spPengaduan = document.getElementById('statPengaduan');
-                if(spKonsultasi) spKonsultasi.textContent = data.sedang_dipanggil_konsultasi;
-                if(spPengaduan) spPengaduan.textContent = data.sedang_dipanggil_pengaduan;
-                
-                document.getElementById('totalPengunjung').textContent = data.antrians.length;
-                document.getElementById('totalMenunggu').textContent = data.total_menunggu;
-                document.getElementById('totalSelesai').textContent = data.total_selesai;
-                document.getElementById('totalDilewati').textContent = data.total_dilewati;
-                
-                if (data.sedang_dipanggil_konsultasi !== '-' && data.sedang_dipanggil_konsultasi !== lastSpokenKonsultasi) {
-                    lastSpokenKonsultasi = data.sedang_dipanggil_konsultasi;
-                    if(typeof speakAntrian === 'function') speakAntrian(lastSpokenKonsultasi, 'Konsultasi');
-                }
-                if (data.sedang_dipanggil_pengaduan !== '-' && data.sedang_dipanggil_pengaduan !== lastSpokenPengaduan) {
-                    lastSpokenPengaduan = data.sedang_dipanggil_pengaduan;
-                    if(typeof speakAntrian === 'function') speakAntrian(lastSpokenPengaduan, 'Pengaduan');
-                }
+        rows.forEach(row => {
+            const nama  = row.getAttribute('data-nama');
+            const kode  = row.getAttribute('data-kode');
+            const stat  = row.getAttribute('data-status');
+            const kep   = row.getAttribute('data-keperluan');
 
-                currentAntrianData = data.antrians;
-                updateTable();
-            }).catch(e => console.log('Polling fail: ', e));
-    }, 4000);
+            // Pencarian nama/kode
+            const matchSearch = nama.includes(query) || kode.includes(query);
+            // Filter status
+            const matchStatus = (statusVal === 'semua') || (stat === statusVal);
+            // Filter keperluan
+            const matchKep    = (kepVal === 'semua') || (kep === kepVal);
 
+            if (matchSearch && matchStatus && matchKep) {
+                row.style.display = '';
+                visibleRows++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        const emptyRow = document.getElementById('emptyRow');
+        if (visibleRows === 0) {
+            if (!emptyRow) {
+                const tbody = document.querySelector('#tableAntrian tbody');
+                const tr = document.createElement('tr');
+                tr.id = 'emptyRow';
+                tr.innerHTML = `
+                    <td colspan="6" class="text-center py-5 text-secondary">
+                        <i class="bi bi-search fs-2 mb-2 d-block opacity-50"></i>
+                        <span class="fw-semibold">Tidak ditemukan kecocokan data antrian.</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            } else {
+                emptyRow.style.display = '';
+                emptyRow.querySelector('span').textContent = 'Tidak ditemukan kecocokan data antrian.';
+            }
+        } else {
+            if (emptyRow) emptyRow.style.display = 'none';
+        }
+    }
 </script>
 @endpush

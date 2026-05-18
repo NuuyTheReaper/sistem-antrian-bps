@@ -350,6 +350,11 @@
             
             <div class="d-flex align-items-center gap-2">
                 @auth
+                    <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 px-3 py-2 border" style="border-radius: 12px; font-weight: 600; font-size: 0.85rem;" onclick="showQrModal()">
+                        <i class="bi bi-qr-code-scan"></i>
+                        <span class="d-none d-sm-inline">QR Pendaftaran</span>
+                    </button>
+                    
                     <div class="dropdown">
                         <div class="btn-profile" data-bs-toggle="dropdown" aria-expanded="false" role="button">
                             <div class="avatar">{{ substr(Auth::user()->name, 0, 1) }}</div>
@@ -359,11 +364,15 @@
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-app">
                             <li class="px-3 py-2">
                                 <div class="text-muted" style="font-size: 0.7rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Masuk Sebagai</div>
-                                <div class="fw-bold">{{ Auth::user()->name }}</div>
+                                <div class="fw-bold">{{ Auth::user()->name }} <span class="badge bg-secondary text-white" style="font-size: 0.6rem; vertical-align: middle;">{{ ucfirst(Auth::user()->role) }}</span></div>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="bi bi-grid-fill me-2 text-primary"></i> Dashboard</a></li>
-                            <li><a class="dropdown-item" href="{{ route('admin.laporan') }}"><i class="bi bi-pie-chart-fill me-2 text-success"></i> Laporan</a></li>
+                            <li><a class="dropdown-item" href="{{ route('admin.riwayat') }}"><i class="bi bi-clock-history me-2 text-warning"></i> Riwayat Antrian</a></li>
+                            @if(Auth::user()->role === 'admin')
+                                <li><a class="dropdown-item" href="{{ route('admin.laporan') }}"><i class="bi bi-pie-chart-fill me-2 text-success"></i> Laporan</a></li>
+                                <li><a class="dropdown-item" href="{{ route('admin.petugas.index') }}"><i class="bi bi-people-fill me-2 text-info"></i> Kelola Petugas</a></li>
+                            @endif
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form action="{{ route('logout') }}" method="POST">
@@ -406,6 +415,122 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {{-- Modal QR Code Pendaftaran --}}
+    <div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-color); padding: 20px;">
+                    <h5 class="modal-title fw-bold" id="qrModalLabel">
+                        <i class="bi bi-qr-code-scan text-primary me-2"></i> QR Code Pendaftaran
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center" style="padding: 30px 24px;">
+                    <p class="text-muted mb-4" style="font-size: 0.9rem;">
+                        Scan QR Code di bawah menggunakan kamera smartphone pengunjung untuk langsung membuka form pendaftaran antrian BPS Tegal.
+                    </p>
+                    
+                    {{-- QR Code Image Container --}}
+                    <div class="d-inline-block p-3 bg-white border mb-3" style="border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                        <img id="qrCodeImg" src="" alt="QR Code Pendaftaran" style="width: 240px; height: 240px; display: block;">
+                    </div>
+                    
+                    {{-- URL Link Display --}}
+                    <div class="mb-4">
+                        <small class="text-muted d-block mb-1" style="font-size: 0.75rem; font-weight: 600;">LINK PENDAFTARAN:</small>
+                        <code class="px-3 py-2 bg-light border text-primary fw-bold" style="border-radius: 10px; font-size: 0.85rem; word-break: break-all;" id="qrCodeLink"></code>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-color); padding: 16px 20px;">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 10px; font-weight: 600; font-size: 0.9rem;">Tutup</button>
+                    <button type="button" class="btn btn-primary" onclick="printQrCode()" style="border-radius: 10px; font-weight: 600; font-size: 0.9rem; background: var(--primary); border: none; padding: 8px 20px;">
+                        <i class="bi bi-printer me-1"></i> Cetak QR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showQrModal() {
+            const link = window.location.origin + '/antrian/daftar';
+            document.getElementById('qrCodeLink').textContent = link;
+            document.getElementById('qrCodeImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(link);
+            
+            const modal = new bootstrap.Modal(document.getElementById('qrModal'));
+            modal.show();
+        }
+
+        function printQrCode() {
+            const link = window.location.origin + '/antrian/daftar';
+            const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(link);
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Cetak QR Code Pendaftaran</title>
+                    <style>
+                        body {
+                            font-family: 'Outfit', sans-serif;
+                            text-align: center;
+                            padding: 50px;
+                            color: #0F172A;
+                            background: #F8FAFC;
+                        }
+                        .container {
+                            max-width: 440px;
+                            margin: 0 auto;
+                            border: 1px solid #E2E8F0;
+                            border-radius: 28px;
+                            padding: 40px;
+                            background: #ffffff;
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+                        }
+                        h1 {
+                            color: #4F46E5;
+                            margin-bottom: 5px;
+                            font-size: 2rem;
+                            font-weight: 900;
+                            letter-spacing: -0.5px;
+                        }
+                        p {
+                            font-size: 1rem;
+                            color: #64748B;
+                            margin-bottom: 30px;
+                        }
+                        img {
+                            width: 260px;
+                            height: 260px;
+                            margin-bottom: 30px;
+                        }
+                        .url {
+                            font-weight: bold;
+                            color: #4F46E5;
+                            font-size: 1rem;
+                            padding: 12px 24px;
+                            background: #F1F5F9;
+                            border-radius: 12px;
+                            display: inline-block;
+                            word-break: break-all;
+                        }
+                    </style>
+                </head>
+                <body onload="window.print(); window.close();">
+                    <div class="container">
+                        <h1>BPS KOTA TEGAL</h1>
+                        <p>Scan QR Code di bawah untuk Ambil Antrian Digital</p>
+                        <img src="${qrUrl}" alt="QR Code">
+                        <br>
+                        <div class="url">${link}</div>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+    </script>
     @stack('scripts')
 </body>
 </html>

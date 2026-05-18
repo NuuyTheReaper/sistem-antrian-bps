@@ -23,10 +23,15 @@ class AntrianController extends Controller
     public function simpanDaftar(Request $request)
     {
         $request->validate([
-            'nama'      => 'required|string|max:100',
-            'alamat'    => 'required|string',
-            'keperluan' => 'required|in:Konsultasi,Pengaduan',
-            'nomor_hp'  => 'required|string|max:20',
+            'nama'                => 'required|string|max:100',
+            'alamat'              => 'required|string',
+            'keperluan'           => 'required|in:Konsultasi,Pengaduan,Rekomendasi Statistik,Perpustakaan',
+            'nomor_hp'            => 'required|string|max:20',
+            'nik'                 => 'required|string|size:16',
+            'jenis_kelamin'       => 'required|in:Laki-laki,Perempuan',
+            'email'               => 'required|email|max:100',
+            'pekerjaan'           => 'required|string|max:100',
+            'pendidikan_terakhir' => 'required|string|max:50',
         ]);
 
         // CEK ANTRIAN GANDA (Berdasarkan nomor HP hari ini)
@@ -40,17 +45,22 @@ class AntrianController extends Controller
                 ->with('info', 'Anda sudah memiliki antrian aktif. Ini adalah tiket Anda.');
         }
 
-        // Ambil nomor antrian terakhir untuk hari ini
-        $lastAntrian = Antrian::hariIni()->max('nomor_antrian') ?? 0;
+        // Ambil nomor antrian terakhir untuk hari ini berdasarkan keperluan
+        $lastAntrian = Antrian::hariIni()->where('keperluan', $request->keperluan)->max('nomor_antrian') ?? 0;
 
         $antrian = Antrian::create([
-            'nomor_antrian'   => $lastAntrian + 1,
-            'nama'            => $request->nama,
-            'alamat'          => $request->alamat,
-            'keperluan'       => $request->keperluan,
-            'nomor_hp'        => $request->nomor_hp,
-            'status'          => 'menunggu',
-            'tanggal_antrian' => Carbon::today(),
+            'nomor_antrian'       => $lastAntrian + 1,
+            'nama'                => $request->nama,
+            'alamat'              => $request->alamat,
+            'keperluan'           => $request->keperluan,
+            'nomor_hp'            => $request->nomor_hp,
+            'nik'                 => $request->nik,
+            'jenis_kelamin'       => $request->jenis_kelamin,
+            'email'               => $request->email,
+            'pekerjaan'           => $request->pekerjaan,
+            'pendidikan_terakhir' => $request->pendidikan_terakhir,
+            'status'              => 'menunggu',
+            'tanggal_antrian'     => Carbon::today(),
         ]);
 
         return redirect()->route('antrian.tiket', $antrian->id);
@@ -114,11 +124,14 @@ class AntrianController extends Controller
     public function dashboard()
     {
         $antrians = Antrian::hariIni()
+            ->with('petugas')
             ->orderBy('nomor_antrian', 'asc')
             ->get();
 
-        $sedangDipanggilPengaduan  = Antrian::sedangDipanggil('Pengaduan');
-        $sedangDipanggilKonsultasi = Antrian::sedangDipanggil('Konsultasi');
+        $sedangDipanggilPengaduan    = Antrian::sedangDipanggil('Pengaduan');
+        $sedangDipanggilKonsultasi   = Antrian::sedangDipanggil('Konsultasi');
+        $sedangDipanggilStatistik    = Antrian::sedangDipanggil('Rekomendasi Statistik');
+        $sedangDipanggilPerpustakaan = Antrian::sedangDipanggil('Perpustakaan');
 
         $totalMenunggu  = Antrian::hariIni()->status('menunggu')->count();
         $totalSelesai   = Antrian::hariIni()->status('selesai')->count();
@@ -128,6 +141,8 @@ class AntrianController extends Controller
             'antrians',
             'sedangDipanggilPengaduan',
             'sedangDipanggilKonsultasi',
+            'sedangDipanggilStatistik',
+            'sedangDipanggilPerpustakaan',
             'totalMenunggu',
             'totalSelesai',
             'totalDilewati'
@@ -145,7 +160,8 @@ class AntrianController extends Controller
             ->where('status', 'dipanggil')
             ->update([
                 'status'        => 'selesai',
-                'waktu_selesai' => Carbon::now()
+                'waktu_selesai' => Carbon::now(),
+                'petugas_id'    => auth()->id(),
             ]);
 
         // 2. Ambil antrian menunggu tertua di keperluan ini
@@ -158,7 +174,8 @@ class AntrianController extends Controller
         if ($next) {
             $next->update([
                 'status'          => 'dipanggil',
-                'waktu_dipanggil' => Carbon::now()
+                'waktu_dipanggil' => Carbon::now(),
+                'petugas_id'      => auth()->id(),
             ]);
             return back()->with('success', "Memanggil antrian {$next->kode_antrian}");
         }
@@ -169,18 +186,23 @@ class AntrianController extends Controller
     public function lewati($id)
     {
         $antrian = Antrian::findOrFail($id);
-        $antrian->update(['status' => 'dilewati']);
+        $antrian->update([
+            'status'     => 'dilewati',
+            'petugas_id' => auth()->id(),
+        ]);
         return back();
     }
 
-    public function selesai($id)
+    public function selesai(Request $request, $id)
     {
         $antrian = Antrian::findOrFail($id);
         $antrian->update([
-            'status'        => 'selesai',
-            'waktu_selesai' => Carbon::now()
+            'status'          => 'selesai',
+            'waktu_selesai'   => Carbon::now(),
+            'catatan_petugas' => $request->input('catatan_petugas'),
+            'petugas_id'      => auth()->id(),
         ]);
-        return back();
+        return back()->with('sukses', 'Antrian selesai dilayani.');
     }
 
     public function resetHarian()
@@ -198,22 +220,33 @@ class AntrianController extends Controller
     {
         try {
             $request->validate([
-                'nama'      => 'required|string|max:100',
-                'alamat'    => 'required|string',
-                'keperluan' => 'required|in:Konsultasi,Pengaduan',
-                'nomor_hp'  => 'required|string|max:20',
+                'nama'                => 'required|string|max:100',
+                'alamat'              => 'required|string',
+                'keperluan'           => 'required|in:Konsultasi,Pengaduan,Rekomendasi Statistik,Perpustakaan',
+                'nomor_hp'            => 'required|string|max:20',
+                'nik'                 => 'nullable|string|size:16',
+                'jenis_kelamin'       => 'nullable|in:Laki-laki,Perempuan',
+                'email'               => 'nullable|email|max:100',
+                'pekerjaan'           => 'nullable|string|max:100',
+                'pendidikan_terakhir' => 'nullable|string|max:50',
             ]);
 
-            $lastAntrian = Antrian::hariIni()->max('nomor_antrian') ?? 0;
+            // Ambil nomor antrian terakhir untuk hari ini berdasarkan keperluan
+            $lastAntrian = Antrian::hariIni()->where('keperluan', $request->keperluan)->max('nomor_antrian') ?? 0;
 
             Antrian::create([
-                'nomor_antrian'   => $lastAntrian + 1,
-                'nama'            => $request->nama,
-                'alamat'          => $request->alamat,
-                'keperluan'       => $request->keperluan,
-                'nomor_hp'        => $request->nomor_hp,
-                'status'          => 'menunggu',
-                'tanggal_antrian' => Carbon::today(),
+                'nomor_antrian'       => $lastAntrian + 1,
+                'nama'                => $request->nama,
+                'alamat'              => $request->alamat,
+                'keperluan'           => $request->keperluan,
+                'nomor_hp'            => $request->nomor_hp,
+                'nik'                 => $request->nik,
+                'jenis_kelamin'       => $request->jenis_kelamin,
+                'email'               => $request->email,
+                'pekerjaan'           => $request->pekerjaan,
+                'pendidikan_terakhir' => $request->pendidikan_terakhir,
+                'status'              => 'menunggu',
+                'tanggal_antrian'     => Carbon::today(),
             ]);
 
             return redirect()->route('admin.dashboard')->with('success', 'Antrian manual berhasil ditambahkan.');
@@ -228,19 +261,24 @@ class AntrianController extends Controller
     public function apiDashboardData()
     {
         $antrians = Antrian::hariIni()
+            ->with('petugas')
             ->orderBy('nomor_antrian', 'asc')
             ->get();
 
-        $sedangDipanggilPengaduan  = Antrian::sedangDipanggil('Pengaduan');
-        $sedangDipanggilKonsultasi = Antrian::sedangDipanggil('Konsultasi');
+        $sedangDipanggilPengaduan    = Antrian::sedangDipanggil('Pengaduan');
+        $sedangDipanggilKonsultasi   = Antrian::sedangDipanggil('Konsultasi');
+        $sedangDipanggilStatistik    = Antrian::sedangDipanggil('Rekomendasi Statistik');
+        $sedangDipanggilPerpustakaan = Antrian::sedangDipanggil('Perpustakaan');
 
         return response()->json([
-            'antrians'                   => $antrians,
-            'sedang_dipanggil_pengaduan' => $sedangDipanggilPengaduan ? $sedangDipanggilPengaduan->kode_antrian : '-',
-            'sedang_dipanggil_konsultasi'=> $sedangDipanggilKonsultasi ? $sedangDipanggilKonsultasi->kode_antrian : '-',
-            'total_menunggu'             => Antrian::hariIni()->status('menunggu')->count(),
-            'total_selesai'              => Antrian::hariIni()->status('selesai')->count(),
-            'total_dilewati'             => Antrian::hariIni()->status('dilewati')->count(),
+            'antrians'                      => $antrians,
+            'sedang_dipanggil_pengaduan'    => $sedangDipanggilPengaduan ? $sedangDipanggilPengaduan->kode_antrian : '-',
+            'sedang_dipanggil_konsultasi'   => $sedangDipanggilKonsultasi ? $sedangDipanggilKonsultasi->kode_antrian : '-',
+            'sedang_dipanggil_statistik'    => $sedangDipanggilStatistik ? $sedangDipanggilStatistik->kode_antrian : '-',
+            'sedang_dipanggil_perpustakaan' => $sedangDipanggilPerpustakaan ? $sedangDipanggilPerpustakaan->kode_antrian : '-',
+            'total_menunggu'                => Antrian::hariIni()->status('menunggu')->count(),
+            'total_selesai'                 => Antrian::hariIni()->status('selesai')->count(),
+            'total_dilewati'                => Antrian::hariIni()->status('dilewati')->count(),
         ]);
     }
 
@@ -249,6 +287,108 @@ class AntrianController extends Controller
     public function laporan()
     {
         return view('admin.laporan');
+    }
+
+    /**
+     * Download laporan tahunan dalam format CSV (hanya diakses Admin).
+     */
+    public function downloadLaporan(Request $request)
+    {
+        $request->validate([
+            'tahun' => 'required|integer|min:2024|max:' . date('Y'),
+        ]);
+
+        $tahun = $request->tahun;
+
+        // Ambil data antrian pada tahun tersebut
+        $data = Antrian::withTrashed()
+            ->with('petugas')
+            ->whereYear('tanggal_antrian', $tahun)
+            ->orderBy('tanggal_antrian', 'asc')
+            ->orderBy('nomor_antrian', 'asc')
+            ->get();
+
+        $filename = "laporan_antrian_bps_{$tahun}.csv";
+
+        $headers = [
+            "Content-type"        => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename={$filename}",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = [
+            'Nomor Antrian', 'Kode Antrian', 'Nama Pengunjung', 'NIK', 'Jenis Kelamin', 
+            'Email', 'No. WhatsApp', 'Alamat', 'Pekerjaan', 'Pendidikan Terakhir', 
+            'Keperluan', 'Status', 'Tanggal Antrian', 'Waktu Dipanggil', 'Waktu Selesai', 
+            'Durasi Layanan (Menit)', 'Petugas Melayani', 'Catatan Pelayanan'
+        ];
+
+        $callback = function() use ($data, $columns) {
+            $file = fopen('php://output', 'w');
+            
+            // UTF-8 BOM agar terbaca dengan baik di Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            fputcsv($file, $columns, ';');
+
+            foreach ($data as $item) {
+                // Hitung durasi layanan dalam menit
+                $durasi = '-';
+                if ($item->waktu_dipanggil && $item->waktu_selesai) {
+                    $durasi = $item->waktu_dipanggil->diffInMinutes($item->waktu_selesai);
+                }
+
+                fputcsv($file, [
+                    $item->nomor_antrian,
+                    $item->kode_antrian,
+                    $item->nama,
+                    $item->nik ? "'{$item->nik}" : '-', // beri apostrof agar tidak scientific notation di Excel
+                    $item->jenis_kelamin ?? '-',
+                    $item->email ?? '-',
+                    $item->nomor_hp,
+                    $item->alamat,
+                    $item->pekerjaan ?? '-',
+                    $item->pendidikan_terakhir ?? '-',
+                    $item->keperluan,
+                    ucfirst($item->status),
+                    $item->tanggal_antrian->format('Y-m-d'),
+                    $item->waktu_dipanggil ? $item->waktu_dipanggil->format('H:i:s') : '-',
+                    $item->waktu_selesai ? $item->waktu_selesai->format('H:i:s') : '-',
+                    $durasi,
+                    $item->petugas ? $item->petugas->name : '-',
+                    $item->catatan_petugas ?? '-'
+                ], ';');
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Tampilkan riwayat antrian pelayanan dengan filter tanggal dan keperluan.
+     */
+    public function riwayat(Request $request)
+    {
+        $tanggal = $request->input('tanggal', Carbon::today()->toDateString());
+        $keperluan = $request->input('keperluan', 'semua');
+
+        $query = Antrian::withTrashed()->with('petugas');
+
+        if ($tanggal) {
+            $query->whereDate('tanggal_antrian', $tanggal);
+        }
+
+        if ($keperluan && $keperluan !== 'semua') {
+            $query->where('keperluan', $keperluan);
+        }
+
+        $riwayat = $query->orderBy('nomor_antrian', 'asc')->get();
+
+        return view('admin.riwayat', compact('riwayat', 'tanggal', 'keperluan'));
     }
 
     public function apiLaporanData(Request $request)
@@ -280,6 +420,8 @@ class AntrianController extends Controller
                     COUNT(*) as total,
                     SUM(CASE WHEN keperluan = 'Konsultasi' THEN 1 ELSE 0 END) as konsultasi,
                     SUM(CASE WHEN keperluan = 'Pengaduan' THEN 1 ELSE 0 END) as pengaduan,
+                    SUM(CASE WHEN keperluan = 'Rekomendasi Statistik' THEN 1 ELSE 0 END) as statistik,
+                    SUM(CASE WHEN keperluan = 'Perpustakaan' THEN 1 ELSE 0 END) as perpustakaan,
                     SUM(CASE WHEN status = 'selesai' THEN 1 ELSE 0 END) as selesai,
                     SUM(CASE WHEN status = 'dilewati' THEN 1 ELSE 0 END) as dilewati,
                     SUM(CASE WHEN status = 'menunggu' THEN 1 ELSE 0 END) as menunggu,
@@ -299,6 +441,8 @@ class AntrianController extends Controller
             $totalPengunjung = [];
             $dataKonsultasi = [];
             $dataPengaduan = [];
+            $dataStatistik = [];
+            $dataPerpustakaan = [];
             $dataSelesai = [];
             $dataDilewati = [];
 
@@ -310,11 +454,13 @@ class AntrianController extends Controller
                 // Ambil data dari map berdasarkan tanggal
                 $row = $dataMap->get($tanggalTarget);
 
-                $totalPengunjung[] = $row ? (int)$row->total : 0;
-                $dataKonsultasi[]  = $row ? (int)$row->konsultasi : 0;
-                $dataPengaduan[]   = $row ? (int)$row->pengaduan : 0;
-                $dataSelesai[]     = $row ? (int)$row->selesai : 0;
-                $dataDilewati[]    = $row ? (int)$row->dilewati : 0;
+                $totalPengunjung[]  = $row ? (int)$row->total : 0;
+                $dataKonsultasi[]   = $row ? (int)$row->konsultasi : 0;
+                $dataPengaduan[]    = $row ? (int)$row->pengaduan : 0;
+                $dataStatistik[]    = $row ? (int)$row->statistik : 0;
+                $dataPerpustakaan[] = $row ? (int)$row->perpustakaan : 0;
+                $dataSelesai[]      = $row ? (int)$row->selesai : 0;
+                $dataDilewati[]     = $row ? (int)$row->dilewati : 0;
 
                 $cursor->addDay();
             }
@@ -337,6 +483,8 @@ class AntrianController extends Controller
                 'totalPengunjung'  => $totalPengunjung,
                 'konsultasi'       => $dataKonsultasi,
                 'pengaduan'        => $dataPengaduan,
+                'statistik'        => $dataStatistik,
+                'perpustakaan'     => $dataPerpustakaan,
                 'selesai'          => $dataSelesai,
                 'dilewati'         => $dataDilewati,
                 'ringkasan'        => [

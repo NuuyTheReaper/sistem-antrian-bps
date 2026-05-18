@@ -14,17 +14,21 @@
         display: flex;
         gap: 0.5rem;
         flex-wrap: wrap;
+        width: 100%;
     }
     .periode-btn {
+        flex: 1 1 auto;
+        text-align: center;
         background: #F8FAFC;
         border: 1px solid var(--border-color);
         color: var(--text-muted);
-        padding: 8px 20px;
+        padding: 8px 16px;
         border-radius: var(--radius-xl);
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
+        white-space: nowrap;
     }
     .periode-btn:hover {
         border-color: var(--primary);
@@ -36,6 +40,11 @@
         border-color: var(--primary);
         color: white;
         box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+    
+    @media (min-width: 576px) {
+        .periode-tabs { width: auto; }
+        .periode-btn { flex: 0 1 auto; padding: 8px 20px; font-size: 0.9rem; }
     }
 
     /* ─── Ringkasan Cards ──────────────────────────────── */
@@ -103,16 +112,27 @@
         padding: 1.5rem;
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 3rem 1rem;
-        color: var(--text-secondary);
-    }
     .empty-state i {
         font-size: 3rem;
         margin-bottom: 1rem;
         display: block;
         opacity: 0.5;
+    }
+
+    /* ─── Premium Floating Hover ───────────────────────── */
+    .hover-floating {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 24px !important;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.03);
+    }
+    .hover-floating:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+        z-index: 5;
+    }
+    .hover-floating .p-3.px-4 {
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
     }
 </style>
 @endpush
@@ -140,7 +160,7 @@
     </div>
 
     {{-- Periode Filter --}}
-    <div class="card-app p-3 mb-4">
+    <div class="card-app hover-floating p-3 mb-4">
         <div class="d-flex flex-wrap justify-content-between align-items-center px-2">
             <span class="fw-bold" style="color: var(--text-main);">
                 <i class="bi bi-calendar-range me-2 text-primary"></i>
@@ -161,14 +181,14 @@
     </div>
 
     {{-- Unduh Laporan Tahunan --}}
-    <div class="card-app p-4 mb-4">
+    <div class="card-app hover-floating p-4 mb-4">
         <h5 class="fw-bold mb-3" style="color: var(--text-main);">
             <i class="bi bi-download me-2 text-success"></i> Unduh Laporan Tahunan BPS
         </h5>
         <p class="text-muted mb-4" style="font-size: 0.85rem;">
             Pilih tahun untuk memfilter data kunjungan antrian BPS, lalu klik tombol unduh untuk mengekspor data lengkap ke dalam file berformat CSV yang kompatibel dengan Microsoft Excel.
         </p>
-        <form action="{{ route('admin.laporan.download') }}" method="GET" class="row g-3 align-items-end">
+        <form action="{{ route('admin.laporan.download') }}" method="GET" class="row g-3 align-items-end" target="_blank">
             <div class="col-12 col-sm-6 col-md-4">
                 <label class="form-label fw-semibold">Pilih Tahun Laporan</label>
                 <select name="tahun" class="form-select" style="height: auto; padding: 10px 16px; border-radius: 12px; border-color: var(--border-color); cursor: pointer;" required>
@@ -192,28 +212,28 @@
     {{-- Ringkasan Statistik --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
-            <div class="card-app ringkasan-card" style="border-top: 4px solid var(--primary); background: rgba(79, 70, 229, 0.03);">
+            <div class="card-app hover-floating ringkasan-card" style="border-top: 4px solid var(--primary); background: rgba(79, 70, 229, 0.03);">
                 <div class="ringkasan-number" id="ringkasanTotal" style="color: var(--primary);">-</div>
                 <div class="ringkasan-label">Total Pengunjung</div>
                 <i class="bi bi-people ringkasan-icon-bg"></i>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card-app ringkasan-card" style="border-top: 4px solid var(--warning); background: rgba(245, 158, 11, 0.03);">
+            <div class="card-app hover-floating ringkasan-card" style="border-top: 4px solid var(--warning); background: rgba(245, 158, 11, 0.03);">
                 <div class="ringkasan-number" id="ringkasanRataRata" style="color: var(--warning);">-</div>
                 <div class="ringkasan-label">Rata-rata / Hari</div>
                 <i class="bi bi-calendar-check ringkasan-icon-bg"></i>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card-app ringkasan-card" style="border-top: 4px solid var(--secondary); background: rgba(16, 185, 129, 0.03);">
+            <div class="card-app hover-floating ringkasan-card" style="border-top: 4px solid var(--secondary); background: rgba(16, 185, 129, 0.03);">
                 <div class="ringkasan-number" id="ringkasanTerramai" style="color: var(--secondary);">-</div>
                 <div class="ringkasan-label">Hari Terramai</div>
                 <i class="bi bi-graph-up-arrow ringkasan-icon-bg"></i>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card-app ringkasan-card" style="border-top: 4px solid var(--primary-light); background: rgba(129, 140, 248, 0.03);">
+            <div class="card-app hover-floating ringkasan-card" style="border-top: 4px solid var(--primary-light); background: rgba(129, 140, 248, 0.03);">
                 <div class="ringkasan-number" id="ringkasanWaktu" style="color: var(--primary-light);">-</div>
                 <div class="ringkasan-label">Avg. Waktu Layanan</div>
                 <i class="bi bi-clock-history ringkasan-icon-bg"></i>
@@ -222,7 +242,7 @@
     </div>
 
     {{-- Grafik Pengunjung Harian --}}
-    <div class="card-app mb-4" style="overflow: hidden; position: relative;">
+    <div class="card-app hover-floating mb-4" style="overflow: hidden; position: relative;">
         <div class="p-3 px-4" style="border-bottom: 1px solid var(--border-color); background: #fdfdfd;">
             <h6 class="mb-0 fw-bold">
                 <i class="bi bi-bar-chart-fill me-2 text-primary"></i>
@@ -245,7 +265,7 @@
 
         {{-- Grafik Keperluan (Stacked Bar) --}}
         <div class="col-lg-8">
-            <div class="card-app" style="overflow: hidden; position: relative; height: 100%;">
+            <div class="card-app hover-floating" style="overflow: hidden; position: relative; height: 100%;">
                 <div class="p-3 px-4" style="border-bottom: 1px solid var(--border-color); background: #fdfdfd;">
                     <h6 class="mb-0 fw-bold">
                         <i class="bi bi-layers-fill me-2 text-primary"></i>
@@ -260,7 +280,7 @@
 
         {{-- Grafik Distribusi Status (Doughnut) --}}
         <div class="col-lg-4">
-            <div class="card-app d-flex flex-column" style="overflow: hidden; position: relative; height: 100%;">
+            <div class="card-app hover-floating d-flex flex-column" style="overflow: hidden; position: relative; height: 100%;">
                 <div class="p-3 px-4" style="border-bottom: 1px solid var(--border-color); background: #fdfdfd;">
                     <h6 class="mb-0 fw-bold">
                         <i class="bi bi-pie-chart-fill me-2 text-primary"></i>
@@ -479,6 +499,22 @@
                         data: data.pengaduan,
                         backgroundColor: 'rgba(204, 42, 58, 0.7)',
                         borderColor: '#cc2a3a',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    },
+                    {
+                        label: 'Rek. Statistik',
+                        data: data.statistik,
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: '#10b981',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    },
+                    {
+                        label: 'Perpustakaan',
+                        data: data.perpustakaan,
+                        backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                        borderColor: '#f59e0b',
                         borderWidth: 1,
                         borderRadius: 4,
                     }

@@ -6,26 +6,63 @@
 <style>
     /* ─── Loket Panels ────────────────────────────────── */
     .loket-panel {
-        border-radius: var(--radius-xl);
+        border-radius: 24px;
         overflow: hidden;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        background: #ffffff;
+        position: relative;
+        z-index: 1;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .loket-panel:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
     }
-    .loket-title {
+    .loket-accent {
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 6px;
+        z-index: 2;
+    }
+    .loket-title-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 14px;
+        border-radius: 20px;
         font-weight: 800;
+        font-size: 0.75rem;
         letter-spacing: 1px;
-        font-size: 0.8rem;
+        margin-bottom: 0.75rem;
     }
     .loket-nomor {
-        font-size: 3rem;
+        font-size: 4rem;
         font-weight: 900;
         line-height: 1;
-        letter-spacing: -1px;
+        letter-spacing: -2px;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    .loket-bg-icon {
+        position: absolute;
+        right: -15px;
+        top: 15px;
+        font-size: 7rem;
+        opacity: 0.03;
+        transform: rotate(-15deg);
+        z-index: 0;
+        pointer-events: none;
+    }
+    .btn-loket {
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+        padding: 14px 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-loket:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.1);
     }
 
     /* ─── Badge Status ────────────────────────────────── */
@@ -47,48 +84,125 @@
 
     /* ─── Stat Cards ──────────────────────────────────── */
     .stat-card {
-        padding: 1.25rem 1.5rem;
-        position: relative;
+        background: #ffffff;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
     }
-    .stat-number {
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+    }
+    .stat-icon-wrap {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 1.8rem;
-        font-weight: 900;
-        line-height: 1.2;
-    }
-    .stat-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--text-secondary);
-        font-weight: 700;
-    }
-    .stat-icon {
-        position: absolute;
-        right: 1.5rem;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 2.2rem;
-        opacity: 0.15;
     }
 
     /* ─── Search / Filter ──────────────────────────────── */
     .search-wrapper {
         position: relative;
         width: 100%;
-        max-width: 320px;
+        max-width: 280px;
     }
     .search-wrapper i {
         position: absolute;
-        left: 14px;
+        left: 18px;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--text-muted);
+        color: var(--primary);
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
     }
     .search-wrapper .form-control {
-        padding-left: 40px;
-        height: 38px;
-        font-size: 0.85rem;
-        border-radius: 20px;
+        padding-left: 50px;
+        padding-right: 20px;
+        height: 46px;
+        font-size: 0.95rem;
+        border-radius: 23px;
+        background: rgba(255, 255, 255, 0.85);
+        border: 2px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        backdrop-filter: blur(10px);
+        color: var(--text-main);
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .search-wrapper .form-control:focus {
+        background: #ffffff;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15), 0 8px 25px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+    .search-wrapper .form-control:focus + i {
+        transform: translateY(-50%) scale(1.15);
+    }
+
+    .filter-select-custom {
+        height: 46px;
+        padding: 10px 38px 10px 22px;
+        font-size: 0.92rem;
+        border-radius: 23px;
+        background-color: rgba(255, 255, 255, 0.9);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%234f46e5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 12px 12px;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
+        backdrop-filter: blur(12px);
+        color: #334155;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .filter-select-custom:focus, .filter-select-custom:hover {
+        background-color: #ffffff;
+        border-color: var(--primary);
+        box-shadow: 0 6px 25px rgba(79, 70, 229, 0.12), 0 2px 10px rgba(79, 70, 229, 0.08);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    /* Smooth Row Transitions */
+    .antrian-row {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    .antrian-row.hiding {
+        opacity: 0 !important;
+        transform: scale(0.95) translateY(-10px) !important;
+        pointer-events: none;
+    }
+
+
+    /* ─── Responsive Mobile Viewport Adjustments ────────── */
+
+    @media (max-width: 576px) {
+        .loket-nomor {
+            font-size: 3.2rem !important;
+        }
+        .loket-panel .p-4 {
+            padding: 1.5rem !important;
+        }
+        .btn-loket {
+            padding: 12px 16px !important;
+        }
+        .stat-card {
+            padding: 1.25rem !important;
+        }
+        .stat-icon-wrap {
+            width: 50px; height: 50px; font-size: 1.5rem;
+        }
     }
 </style>
 @endpush
@@ -97,26 +211,26 @@
 <div class="container" style="max-width: 1200px;">
 
     {{-- Header --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 fw-bold mb-1">
-                <i class="bi bi-grid-fill me-2" style="color: var(--primary-light);"></i>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5">
+        <div class="mb-3 mb-md-0">
+            <h1 class="h3 fw-bold mb-1" style="color: var(--text-main); letter-spacing: -0.5px;">
+                <i class="bi bi-grid-fill me-2" style="color: var(--primary);"></i>
                 Dashboard Antrian
             </h1>
-            <p class="text-secondary mb-0">
-                <i class="bi bi-calendar-event me-1"></i>
+            <p class="text-secondary mb-0 fw-medium" style="font-size: 0.95rem;">
+                <i class="bi bi-calendar-event me-1 text-primary"></i>
                 Pelayanan BPS Kota Tegal • {{ Carbon\Carbon::today()->translatedFormat('d F Y') }}
             </p>
         </div>
-        <div class="d-flex gap-2 mt-2 mt-md-0">
-            <a href="{{ route('admin.daftar-manual') }}" class="btn btn-gradient py-2 px-4" style="border-radius: var(--radius-lg); font-weight: 600;">
-                <i class="bi bi-person-plus-fill me-1"></i> Daftar Manual
+        <div class="d-flex gap-3">
+            <a href="{{ route('admin.daftar-manual') }}" class="btn btn-gradient text-white d-inline-flex align-items-center justify-content-center" style="border-radius: 20px; font-weight: 600; padding: 10px 24px; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2); transition: all 0.3s;">
+                <i class="bi bi-person-plus-fill me-2"></i> Daftar Manual
             </a>
             @if(Auth::user()->role === 'admin')
-                <form action="{{ route('admin.reset') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mereset semua data antrian HARI INI? Tindakan ini tidak dapat dibatalkan.')">
+                <form action="{{ route('admin.reset') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mereset semua data antrian HARI INI? Tindakan ini tidak dapat dibatalkan.')" class="m-0">
                     @csrf
-                    <button type="submit" class="btn btn-danger-custom py-2 px-4" title="Reset semua antrian hari ini">
-                        <i class="bi bi-trash-fill me-1"></i> Reset Harian
+                    <button type="submit" class="btn btn-gradient-danger text-white d-inline-flex align-items-center justify-content-center" style="border-radius: 20px; font-weight: 600; padding: 10px 24px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2); transition: all 0.3s;" title="Reset semua antrian hari ini">
+                        <i class="bi bi-trash-fill me-2"></i> Reset Harian
                     </button>
                 </form>
             @endif
@@ -124,21 +238,26 @@
     </div>
 
     {{-- PANEL PANGGIL ANTRIAN (4 Panels in a responsive row) --}}
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-5">
         {{-- Panel Konsultasi --}}
-        <div class="col-sm-6 col-lg-3">
-            <div class="loket-panel card-app text-center h-100 d-flex flex-column justify-content-between">
-                <div class="loket-title py-2 text-white" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: var(--radius) var(--radius) 0 0;">
-                    LOKET 1: KONSULTASI
-                </div>
-                <div class="p-4 flex-grow-1 d-flex flex-column justify-content-center">
-                    <div class="loket-nomor mb-3 text-primary fw-bold" id="panelSedangDipanggilKonsultasi">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="loket-panel h-100 d-flex flex-column">
+                <div class="loket-accent" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));"></div>
+                <i class="bi bi-chat-dots-fill loket-bg-icon" style="color: var(--primary);"></i>
+                <div class="p-4 flex-grow-1 d-flex flex-column align-items-center text-center position-relative" style="z-index: 2;">
+                    <div class="loket-title-badge" style="background: rgba(79, 70, 229, 0.1); color: var(--primary);">
+                        <i class="bi bi-headset me-1"></i> LOKET 1
+                    </div>
+                    <div class="text-secondary fw-semibold mb-1" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">Konsultasi</div>
+                    <div class="loket-nomor" style="color: var(--primary-dark);" id="panelSedangDipanggilKonsultasi">
                         {{ $sedangDipanggilKonsultasi ? $sedangDipanggilKonsultasi->kode_antrian : '-' }}
                     </div>
+                </div>
+                <div class="px-4 pb-4 position-relative" style="z-index: 2;">
                     <form action="{{ route('admin.panggil', 'Konsultasi') }}" method="POST">
                         @csrf
-                        <button type="submit" class="btn btn-gradient w-100 py-2" style="border-radius: var(--radius-lg); font-weight: 600;">
-                            <i class="bi bi-megaphone-fill me-1"></i> Panggil
+                        <button type="submit" class="btn btn-loket w-100 text-white" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);">
+                            <i class="bi bi-volume-up-fill me-2"></i> Panggil
                         </button>
                     </form>
                 </div>
@@ -146,19 +265,24 @@
         </div>
 
         {{-- Panel Pengaduan --}}
-        <div class="col-sm-6 col-lg-3">
-            <div class="loket-panel card-app text-center h-100 d-flex flex-column justify-content-between">
-                <div class="loket-title py-2 text-white" style="background: linear-gradient(135deg, #EF4444, #B91C1C); border-radius: var(--radius) var(--radius) 0 0;">
-                    LOKET 2: PENGADUAN
-                </div>
-                <div class="p-4 flex-grow-1 d-flex flex-column justify-content-center">
-                    <div class="loket-nomor mb-3 fw-bold" style="color: #EF4444;" id="panelSedangDipanggilPengaduan">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="loket-panel h-100 d-flex flex-column">
+                <div class="loket-accent" style="background: linear-gradient(135deg, #EF4444, #B91C1C);"></div>
+                <i class="bi bi-megaphone-fill loket-bg-icon" style="color: #EF4444;"></i>
+                <div class="p-4 flex-grow-1 d-flex flex-column align-items-center text-center position-relative" style="z-index: 2;">
+                    <div class="loket-title-badge" style="background: rgba(239, 68, 68, 0.1); color: #EF4444;">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i> LOKET 2
+                    </div>
+                    <div class="text-secondary fw-semibold mb-1" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">Pengaduan</div>
+                    <div class="loket-nomor" style="color: #B91C1C;" id="panelSedangDipanggilPengaduan">
                         {{ $sedangDipanggilPengaduan ? $sedangDipanggilPengaduan->kode_antrian : '-' }}
                     </div>
+                </div>
+                <div class="px-4 pb-4 position-relative" style="z-index: 2;">
                     <form action="{{ route('admin.panggil', 'Pengaduan') }}" method="POST">
                         @csrf
-                        <button type="submit" class="btn w-100 py-2 text-white" style="background: linear-gradient(135deg, #EF4444, #B91C1C); border-radius: var(--radius-lg); font-weight: 600; border: none; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">
-                            <i class="bi bi-megaphone-fill me-1"></i> Panggil
+                        <button type="submit" class="btn btn-loket w-100 text-white" style="background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);">
+                            <i class="bi bi-volume-up-fill me-2"></i> Panggil
                         </button>
                     </form>
                 </div>
@@ -166,19 +290,24 @@
         </div>
 
         {{-- Panel Rekomendasi Statistik --}}
-        <div class="col-sm-6 col-lg-3">
-            <div class="loket-panel card-app text-center h-100 d-flex flex-column justify-content-between">
-                <div class="loket-title py-2 text-white" style="background: linear-gradient(135deg, #10B981, #047857); border-radius: var(--radius) var(--radius) 0 0;">
-                    LOKET 3: STATISTIK
-                </div>
-                <div class="p-4 flex-grow-1 d-flex flex-column justify-content-center">
-                    <div class="loket-nomor mb-3 fw-bold" style="color: #10B981;" id="panelSedangDipanggilStatistik">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="loket-panel h-100 d-flex flex-column">
+                <div class="loket-accent" style="background: linear-gradient(135deg, #10B981, #047857);"></div>
+                <i class="bi bi-bar-chart-fill loket-bg-icon" style="color: #10B981;"></i>
+                <div class="p-4 flex-grow-1 d-flex flex-column align-items-center text-center position-relative" style="z-index: 2;">
+                    <div class="loket-title-badge" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
+                        <i class="bi bi-pie-chart-fill me-1"></i> LOKET 3
+                    </div>
+                    <div class="text-secondary fw-semibold mb-1" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">Statistik</div>
+                    <div class="loket-nomor" style="color: #047857;" id="panelSedangDipanggilStatistik">
                         {{ $sedangDipanggilStatistik ? $sedangDipanggilStatistik->kode_antrian : '-' }}
                     </div>
+                </div>
+                <div class="px-4 pb-4 position-relative" style="z-index: 2;">
                     <form action="{{ route('admin.panggil', 'Rekomendasi Statistik') }}" method="POST">
                         @csrf
-                        <button type="submit" class="btn w-100 py-2 text-white" style="background: linear-gradient(135deg, #10B981, #047857); border-radius: var(--radius-lg); font-weight: 600; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
-                            <i class="bi bi-megaphone-fill me-1"></i> Panggil
+                        <button type="submit" class="btn btn-loket w-100 text-white" style="background: linear-gradient(135deg, #10B981, #047857); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);">
+                            <i class="bi bi-volume-up-fill me-2"></i> Panggil
                         </button>
                     </form>
                 </div>
@@ -186,19 +315,24 @@
         </div>
 
         {{-- Panel Perpustakaan --}}
-        <div class="col-sm-6 col-lg-3">
-            <div class="loket-panel card-app text-center h-100 d-flex flex-column justify-content-between">
-                <div class="loket-title py-2 text-white" style="background: linear-gradient(135deg, #F59E0B, #B45309); border-radius: var(--radius) var(--radius) 0 0;">
-                    LOKET 4: PERPUSTAKAAN
-                </div>
-                <div class="p-4 flex-grow-1 d-flex flex-column justify-content-center">
-                    <div class="loket-nomor mb-3 fw-bold" style="color: #F59E0B;" id="panelSedangDipanggilPerpustakaan">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="loket-panel h-100 d-flex flex-column">
+                <div class="loket-accent" style="background: linear-gradient(135deg, #F59E0B, #B45309);"></div>
+                <i class="bi bi-book-fill loket-bg-icon" style="color: #F59E0B;"></i>
+                <div class="p-4 flex-grow-1 d-flex flex-column align-items-center text-center position-relative" style="z-index: 2;">
+                    <div class="loket-title-badge" style="background: rgba(245, 158, 11, 0.1); color: #F59E0B;">
+                        <i class="bi bi-journal-bookmark-fill me-1"></i> LOKET 4
+                    </div>
+                    <div class="text-secondary fw-semibold mb-1" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">Perpustakaan</div>
+                    <div class="loket-nomor" style="color: #B45309;" id="panelSedangDipanggilPerpustakaan">
                         {{ $sedangDipanggilPerpustakaan ? $sedangDipanggilPerpustakaan->kode_antrian : '-' }}
                     </div>
+                </div>
+                <div class="px-4 pb-4 position-relative" style="z-index: 2;">
                     <form action="{{ route('admin.panggil', 'Perpustakaan') }}" method="POST">
                         @csrf
-                        <button type="submit" class="btn w-100 py-2 text-white" style="background: linear-gradient(135deg, #F59E0B, #B45309); border-radius: var(--radius-lg); font-weight: 600; border: none; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);">
-                            <i class="bi bi-megaphone-fill me-1"></i> Panggil
+                        <button type="submit" class="btn btn-loket w-100 text-white" style="background: linear-gradient(135deg, #F59E0B, #B45309); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.25);">
+                            <i class="bi bi-volume-up-fill me-2"></i> Panggil
                         </button>
                     </form>
                 </div>
@@ -207,61 +341,75 @@
     </div>
 
     {{-- RINGKASAN DATA HARI INI --}}
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-5">
         {{-- Total Menunggu --}}
-        <div class="col-4">
-            <div class="card-app stat-card" style="border-top: 4px solid var(--primary); background: rgba(79, 70, 229, 0.03);">
-                <div class="stat-number text-primary" id="totalMenunggu">{{ $totalMenunggu }}</div>
-                <div class="stat-label">Menunggu</div>
-                <i class="bi bi-hourglass-split stat-icon text-primary"></i>
+        <div class="col-12 col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon-wrap me-3" style="background: rgba(79, 70, 229, 0.1); color: var(--primary);">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div>
+                    <div class="stat-label text-muted mb-1" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Menunggu</div>
+                    <div class="stat-number fw-bold" style="font-size: 1.75rem; color: var(--text-main); line-height: 1;" id="totalMenunggu">{{ $totalMenunggu }}</div>
+                </div>
             </div>
         </div>
         {{-- Total Selesai --}}
-        <div class="col-4">
-            <div class="card-app stat-card" style="border-top: 4px solid var(--success); background: rgba(16, 185, 129, 0.03);">
-                <div class="stat-number text-success" id="totalSelesai">{{ $totalSelesai }}</div>
-                <div class="stat-label">Selesai</div>
-                <i class="bi bi-check-circle stat-icon text-success"></i>
+        <div class="col-12 col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon-wrap me-3" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-label text-muted mb-1" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Selesai Dilayani</div>
+                    <div class="stat-number fw-bold" style="font-size: 1.75rem; color: var(--text-main); line-height: 1;" id="totalSelesai">{{ $totalSelesai }}</div>
+                </div>
             </div>
         </div>
         {{-- Total Dilewati --}}
-        <div class="col-4">
-            <div class="card-app stat-card" style="border-top: 4px solid #DB2777; background: rgba(219, 39, 119, 0.03);">
-                <div class="stat-number text-danger" style="color: #DB2777 !important;" id="totalDilewati">{{ $totalDilewati }}</div>
-                <div class="stat-label">Dilewati</div>
-                <i class="bi bi-x-circle stat-icon" style="color: #DB2777;"></i>
+        <div class="col-12 col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon-wrap me-3" style="background: rgba(219, 39, 119, 0.1); color: #DB2777;">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-label text-muted mb-1" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Dilewati</div>
+                    <div class="stat-number fw-bold" style="font-size: 1.75rem; color: var(--text-main); line-height: 1;" id="totalDilewati">{{ $totalDilewati }}</div>
+                </div>
             </div>
         </div>
     </div>
 
     {{-- DAFTAR ANTRIAN HARI INI --}}
-    <div class="card-app p-4" style="min-height: 400px;">
+    <div style="min-height: 400px;">
         
         {{-- Toolbar / Filter --}}
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-            <h5 class="fw-bold mb-0 text-main flex-grow-1">
-                <i class="bi bi-list-stars me-2 text-primary"></i>
+        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center mb-4 gap-3">
+            <h5 class="fw-bold mb-0 text-main d-flex align-items-center">
+                <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 me-3 d-flex align-items-center justify-content-center">
+                    <i class="bi bi-list-stars"></i>
+                </div>
                 Daftar Antrian Hari Ini
             </h5>
             
-            <div class="d-flex flex-wrap gap-2 align-items-center w-100 w-md-auto">
+            <div class="d-flex flex-wrap gap-3 align-items-center">
                 {{-- Search --}}
                 <div class="search-wrapper">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="searchKeyword" class="form-control" placeholder="Cari nama atau kode...">
+                    <input type="text" id="searchKeyword" class="form-control form-control-solid" placeholder="Cari nama / kode...">
                 </div>
                 
                 {{-- Filter Status --}}
-                <select id="filterStatus" class="form-select form-select-sm" style="border-radius: 20px; width: 150px; font-size: 0.8rem; border-color: var(--border-color); cursor: pointer;">
+                <select id="filterStatus" class="form-select filter-select-custom" style="width: 180px;">
                     <option value="semua">Semua Status</option>
                     <option value="menunggu">Menunggu</option>
-                    <option value="dipanggil">Sedang Dipanggil</option>
+                    <option value="dipanggil">Dipanggil</option>
                     <option value="selesai">Selesai</option>
                     <option value="dilewati">Dilewati</option>
                 </select>
 
                 {{-- Filter Keperluan --}}
-                <select id="filterKeperluan" class="form-select form-select-sm" style="border-radius: 20px; width: 150px; font-size: 0.8rem; border-color: var(--border-color); cursor: pointer;">
+                <select id="filterKeperluan" class="form-select filter-select-custom" style="width: 220px;">
                     <option value="semua">Semua Layanan</option>
                     <option value="Konsultasi">Konsultasi</option>
                     <option value="Pengaduan">Pengaduan</option>
@@ -272,16 +420,16 @@
         </div>
 
         {{-- Table --}}
-        <div class="table-responsive">
-            <table class="table table-app align-middle" id="tableAntrian">
+        <div class="table-responsive" style="overflow-x: visible;">
+            <table class="table table-floating table-mobile-cards align-middle" id="tableAntrian">
                 <thead>
                     <tr>
-                        <th width="10%">KODE</th>
-                        <th width="20%">PENGUNJUNG</th>
-                        <th width="15%">KONTAK</th>
+                        <th width="12%">KODE</th>
+                        <th width="22%">PENGUNJUNG</th>
+                        <th width="16%">KONTAK</th>
                         <th width="20%">LAYANAN</th>
                         <th width="15%">STATUS</th>
-                        <th width="20%" class="text-end">AKSI</th>
+                        <th width="15%" class="text-end">AKSI</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -291,20 +439,20 @@
                             data-kode="{{ strtolower($item->kode_antrian) }}" 
                             data-status="{{ $item->status }}"
                             data-keperluan="{{ $item->keperluan }}">
-                            <td>
+                            <td data-label="Kode">
                                 <div class="badge-kode-antrian fs-6 py-2 px-3 fw-bold" 
                                      style="border-radius: 12px; display: inline-block;">
                                     {{ $item->kode_antrian }}
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Pengunjung">
                                 <div class="fw-bold" style="color: var(--text-main);">{{ $item->nama }}</div>
                                 @if($item->nik)
                                     <small class="text-muted d-block" style="font-size: 0.72rem;">NIK: {{ $item->nik }}</small>
                                 @endif
                                 <small class="text-muted" style="font-size: 0.75rem; font-weight: 500;">{{ Str::limit($item->alamat, 40) }}</small>
                             </td>
-                            <td>
+                            <td data-label="Kontak">
                                 <div class="fw-medium" style="font-size: 0.85rem;">
                                     <i class="bi bi-whatsapp text-success me-1"></i>{{ $item->nomor_hp }}
                                 </div>
@@ -312,7 +460,7 @@
                                     <small class="text-muted d-block" style="font-size: 0.72rem;">{{ $item->email }}</small>
                                 @endif
                             </td>
-                            <td>
+                            <td data-label="Layanan">
                                 <div class="fw-bold" style="font-size: 0.85rem; color: var(--text-main);">{{ $item->keperluan }}</div>
                                 @if($item->petugas)
                                     <small class="text-success d-block fw-semibold" style="font-size: 0.72rem;">
@@ -320,7 +468,7 @@
                                     </small>
                                 @endif
                             </td>
-                            <td>
+                            <td data-label="Status">
                                 <span class="badge-status badge-{{ $item->status }}">
                                     @if($item->status === 'menunggu')
                                         <i class="bi bi-hourglass-split"></i> Menunggu
@@ -333,29 +481,31 @@
                                     @endif
                                 </span>
                             </td>
-                            <td class="text-end">
+                            <td data-label="Aksi" class="text-end">
                                 @if($item->status === 'menunggu')
                                     <form action="{{ route('admin.lewati', $item->id) }}" method="POST" class="d-inline">
                                         @csrf
-                                        <button type="submit" class="btn-danger-custom px-3 py-1" title="Lewati antrian">
-                                            <i class="bi bi-arrow-right-short"></i> Lewati
+                                        <button type="submit" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold" style="background: transparent; color: #EF4444; border: 1px solid #FECDD3; border-radius: 20px; transition: all 0.2s;" onmouseover="this.style.background='#FEF2F2'; this.style.borderColor='#FCA5A5';" onmouseout="this.style.background='transparent'; this.style.borderColor='#FECDD3';" title="Lewati antrian">
+                                            Lewati <i class="bi bi-arrow-right-short ms-1"></i>
                                         </button>
                                     </form>
                                 @elseif($item->status === 'dipanggil')
-                                    <button type="button" class="btn-success-custom px-3 py-1" onclick="showSelesaiModal({{ $item->id }})" title="Selesai dilayani">
-                                        <i class="bi bi-check-lg"></i> Selesai
-                                    </button>
-                                    <form action="{{ route('admin.lewati', $item->id) }}" method="POST" class="d-inline ms-1">
-                                        @csrf
-                                        <button type="submit" class="btn-danger-custom px-3 py-1" title="Lewati antrian">
-                                            <i class="bi bi-arrow-right-short"></i> Lewati
+                                    <div class="d-flex flex-wrap justify-content-end gap-2">
+                                        <button type="button" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold text-white" style="background: #10B981; border: none; border-radius: 20px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);" onclick="showSelesaiModal({{ $item->id }})" title="Selesai dilayani">
+                                            <i class="bi bi-check-lg me-1"></i> Selesai
                                         </button>
-                                    </form>
+                                        <form action="{{ route('admin.lewati', $item->id) }}" method="POST" class="m-0">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold" style="background: transparent; color: #EF4444; border: 1px solid #FECDD3; border-radius: 20px; transition: all 0.2s;" onmouseover="this.style.background='#FEF2F2'; this.style.borderColor='#FCA5A5';" onmouseout="this.style.background='transparent'; this.style.borderColor='#FECDD3';" title="Lewati antrian">
+                                                Lewati <i class="bi bi-arrow-right-short ms-1"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 @else
                                     <div class="text-end">
-                                        <span class="text-muted fs-7 fw-semibold"><i class="bi bi-check2-all me-1 text-success"></i> Selesai</span>
+                                        <span class="badge bg-light text-secondary border fw-bold px-3 py-2" style="border-radius: 12px;"><i class="bi bi-check2-all me-1 text-success"></i> Tuntas</span>
                                         @if($item->catatan_petugas)
-                                            <small class="text-muted d-block text-truncate" style="max-width: 150px; font-size: 0.65rem;" title="{{ $item->catatan_petugas }}">
+                                            <small class="text-muted d-block text-truncate mt-1" style="max-width: 150px; font-size: 0.65rem;" title="{{ $item->catatan_petugas }}">
                                                 "{{ $item->catatan_petugas }}"
                                             </small>
                                         @endif
@@ -510,22 +660,30 @@
                 actions = `
                     <form action="${baseUrl}/admin/antrian/lewati/${item.id}" method="POST" class="d-inline">
                         <input type="hidden" name="_token" value="${csrf}">
-                        <button type="submit" class="btn-danger-custom px-3 py-1" title="Lewati antrian"><i class="bi bi-arrow-right-short"></i> Lewati</button>
+                        <button type="submit" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold" style="background: transparent; color: #EF4444; border: 1px solid #FECDD3; border-radius: 20px; transition: all 0.2s;" onmouseover="this.style.background='#FEF2F2'; this.style.borderColor='#FCA5A5';" onmouseout="this.style.background='transparent'; this.style.borderColor='#FECDD3';" title="Lewati antrian">
+                            Lewati <i class="bi bi-arrow-right-short ms-1"></i>
+                        </button>
                     </form>
                 `;
             } else if (item.status === 'dipanggil') {
                 actions = `
-                    <button type="button" class="btn-success-custom px-3 py-1" onclick="showSelesaiModal(${item.id})" title="Selesai dilayani"><i class="bi bi-check-lg"></i> Selesai</button>
-                    <form action="${baseUrl}/admin/antrian/lewati/${item.id}" method="POST" class="d-inline ms-1">
-                        <input type="hidden" name="_token" value="${csrf}">
-                        <button type="submit" class="btn-danger-custom px-3 py-1" title="Lewati antrian"><i class="bi bi-arrow-right-short"></i> Lewati</button>
-                    </form>
+                    <div class="d-flex flex-wrap justify-content-end gap-2">
+                        <button type="button" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold text-white" style="background: #10B981; border: none; border-radius: 20px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);" onclick="showSelesaiModal(${item.id})" title="Selesai dilayani">
+                            <i class="bi bi-check-lg me-1"></i> Selesai
+                        </button>
+                        <form action="${baseUrl}/admin/antrian/lewati/${item.id}" method="POST" class="m-0">
+                            <input type="hidden" name="_token" value="${csrf}">
+                            <button type="submit" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold" style="background: transparent; color: #EF4444; border: 1px solid #FECDD3; border-radius: 20px; transition: all 0.2s;" onmouseover="this.style.background='#FEF2F2'; this.style.borderColor='#FCA5A5';" onmouseout="this.style.background='transparent'; this.style.borderColor='#FECDD3';" title="Lewati antrian">
+                                Lewati <i class="bi bi-arrow-right-short ms-1"></i>
+                            </button>
+                        </form>
+                    </div>
                 `;
             } else {
-                let noteHtml = item.catatan_petugas ? `<small class="text-muted d-block text-truncate" style="max-width: 150px; font-size: 0.65rem;" title="${item.catatan_petugas}">"${item.catatan_petugas}"</small>` : '';
+                let noteHtml = item.catatan_petugas ? `<small class="text-muted d-block text-truncate mt-1" style="max-width: 150px; font-size: 0.65rem;" title="${item.catatan_petugas}">"${item.catatan_petugas}"</small>` : '';
                 actions = `
                     <div class="text-end">
-                        <span class="text-muted fs-7 fw-semibold"><i class="bi bi-check2-all me-1 text-success"></i> Selesai</span>
+                        <span class="badge bg-light text-secondary border fw-bold px-3 py-2" style="border-radius: 12px;"><i class="bi bi-check2-all me-1 text-success"></i> Tuntas</span>
                         ${noteHtml}
                     </div>
                 `;
@@ -541,26 +699,26 @@
                     data-kode="${item.kode_antrian.toLowerCase()}" 
                     data-status="${item.status}"
                     data-keperluan="${item.keperluan}">
-                    <td>
+                    <td data-label="Kode">
                         <div class="badge-kode-antrian fs-6 py-2 px-3 fw-bold" style="border-radius: 12px; display: inline-block;">
                             ${item.kode_antrian}
                         </div>
                     </td>
-                    <td>
+                    <td data-label="Pengunjung">
                         <div class="fw-bold" style="color: var(--text-main);">${item.nama}</div>
                         ${nikHtml}
                         <small class="text-muted" style="font-size: 0.75rem; font-weight: 500;">${item.alamat.substring(0, 40)}</small>
                     </td>
-                    <td>
+                    <td data-label="Kontak">
                         <div class="fw-medium" style="font-size: 0.85rem;"><i class="bi bi-whatsapp text-success me-1"></i>${item.nomor_hp}</div>
                         ${emailHtml}
                     </td>
-                    <td>
+                    <td data-label="Layanan">
                         <div class="fw-bold" style="font-size: 0.85rem; color: var(--text-main);">${item.keperluan}</div>
                         ${petugasHtml}
                     </td>
-                    <td>${statusBadge}</td>
-                    <td class="text-end">${actions}</td>
+                    <td data-label="Status">${statusBadge}</td>
+                    <td data-label="Aksi" class="text-end">${actions}</td>
                 </tr>
             `;
         });
@@ -593,10 +751,23 @@
             const matchKep    = (kepVal === 'semua') || (kep === kepVal);
 
             if (matchSearch && matchStatus && matchKep) {
-                row.style.display = '';
+                if (row.style.display === 'none') {
+                    row.style.display = '';
+                    row.classList.add('hiding');
+                    void row.offsetHeight; // force reflow
+                    row.classList.remove('hiding');
+                }
                 visibleRows++;
             } else {
-                row.style.display = 'none';
+                if (row.style.display !== 'none' && !row.classList.contains('hiding')) {
+                    row.classList.add('hiding');
+                    setTimeout(() => {
+                        if (row.classList.contains('hiding')) {
+                            row.style.display = 'none';
+                            row.classList.remove('hiding');
+                        }
+                    }, 250);
+                }
             }
         });
 

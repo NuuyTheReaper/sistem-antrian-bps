@@ -77,9 +77,9 @@
     </div>
 
     {{-- Riwayat Table --}}
-    <div class="card-app p-4">
-        <div class="table-responsive">
-            <table class="table table-app align-middle">
+    <div style="min-height: 400px;">
+        <div class="table-responsive" style="overflow-x: visible;">
+            <table class="table table-floating table-mobile-cards align-middle">
                 <thead>
                     <tr>
                         <th width="10%">KODE</th>
@@ -92,13 +92,13 @@
                 </thead>
                 <tbody>
                     @forelse($riwayat as $item)
-                        <tr>
-                            <td>
+                        <tr data-status="{{ $item->status }}">
+                            <td data-label="Kode">
                                 <div class="badge-kode-antrian fs-6 py-2 px-3 fw-bold" style="border-radius: 12px; display: inline-block;">
                                     {{ $item->kode_antrian }}
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Data Pengunjung">
                                 <div class="fw-bold" style="color: var(--text-main); font-size: 0.95rem;">{{ $item->nama }}</div>
                                 @if($item->nik)
                                     <small class="text-muted d-block" style="font-size: 0.75rem;"><i class="bi bi-card-id me-1 text-primary"></i>NIK: {{ $item->nik }}</small>
@@ -110,7 +110,7 @@
                                     <i class="bi bi-geo-alt me-1"></i>{{ $item->alamat }}
                                 </small>
                             </td>
-                            <td>
+                            <td data-label="Kontak & Layanan">
                                 <div class="fw-semibold text-primary" style="font-size: 0.85rem;">{{ $item->keperluan }}</div>
                                 <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: 500;">
                                     <i class="bi bi-whatsapp text-success me-1"></i>{{ $item->nomor_hp }}
@@ -122,7 +122,7 @@
                                     <small class="text-muted d-block" style="font-size: 0.72rem;"><i class="bi bi-briefcase me-1"></i>{{ $item->pekerjaan }} ({{ $item->pendidikan_terakhir }})</small>
                                 @endif
                             </td>
-                            <td>
+                            <td data-label="Status">
                                 <span class="badge-status badge-{{ $item->status }}">
                                     @if($item->status === 'menunggu')
                                         <i class="bi bi-hourglass-split"></i> Menunggu
@@ -145,7 +145,7 @@
                                     </small>
                                 @endif
                             </td>
-                            <td>
+                            <td data-label="Petugas">
                                 @if($item->petugas)
                                     <div class="fw-bold text-success" style="font-size: 0.85rem;">
                                         <i class="bi bi-person-circle me-1"></i>{{ $item->petugas->name }}
@@ -155,7 +155,7 @@
                                     <span class="text-secondary" style="font-size: 0.8rem;">-</span>
                                 @endif
                             </td>
-                            <td>
+                            <td data-label="Catatan">
                                 @if($item->catatan_petugas)
                                     <div class="p-2 bg-light border" style="border-radius: 8px; font-size: 0.78rem; font-style: italic; color: #475569;">
                                         "{{ $item->catatan_petugas }}"

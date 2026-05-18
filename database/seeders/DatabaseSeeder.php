@@ -16,8 +16,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Buat user admin default jika belum ada
-        User::firstOrCreate(
+        // Buat atau update user admin default
+        User::updateOrCreate(
             ['email' => 'admin@bpstegal.com'],
             [
                 'name'     => 'Admin BPS',

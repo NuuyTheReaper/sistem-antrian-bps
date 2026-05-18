@@ -51,18 +51,7 @@
 @section('content')
 <div class="container" style="max-width: 1000px;">
 
-    {{-- Alert sukses / error --}}
-    @if(session('sukses'))
-        <div class="alert alert-success alert-dismissible fade show p-3" role="alert" style="border-radius: 16px; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15); background: #ECFDF5; color: #065F46;">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-check-circle-fill fs-5 me-2"></i>
-                <div>
-                    <strong>Berhasil!</strong> {{ session('sukses') }}
-                </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+
 
     {{-- Header --}}
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -76,9 +65,11 @@
                 Hanya Administrator yang dapat menambahkan, mengedit, atau menghapus akun Petugas.
             </p>
         </div>
-        <button class="btn btn-gradient py-2 px-4 mt-2 mt-sm-0" style="border-radius: var(--radius-lg); font-weight: 600;" data-bs-toggle="modal" data-bs-target="#tambahPetugasModal">
-            <i class="bi bi-person-plus-fill me-1"></i> Tambah Petugas
-        </button>
+        <div class="mt-3 mt-md-0 w-100 w-md-auto">
+            <button class="btn btn-gradient py-2 px-4 w-100" style="border-radius: var(--radius-lg); font-weight: 600;" data-bs-toggle="modal" data-bs-target="#tambahPetugasModal">
+                <i class="bi bi-person-plus-fill me-1"></i> Tambah Petugas
+            </button>
+        </div>
     </div>
 
     {{-- Petugas List --}}

@@ -157,7 +157,6 @@
         .row > div:nth-child(2) .card-app { animation-delay: 0.2s; }
         .row > div:nth-child(3) .card-app { animation-delay: 0.3s; }
         .row > div:nth-child(4) .card-app { animation-delay: 0.4s; }
-        }
         
         .card-glass {
             background: var(--app-surface);
@@ -192,7 +191,149 @@
             margin-bottom: 8px;
         }
 
-        /* Buttons */
+        /* ─── Responsive Tables ───────────────────────────── */
+        .table-app {
+            color: var(--text-main);
+            margin-bottom: 0;
+        }
+        .table-app th {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+            padding: 1rem;
+        }
+        .table-app td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-color);
+        }
+        /* Premium Floating Table Rows */
+        @media (min-width: 768px) {
+            .table-floating {
+                border-collapse: separate !important;
+                border-spacing: 0 16px !important;
+                background: transparent !important;
+            }
+            .table-floating thead th {
+                border: none !important;
+                background: transparent !important;
+                font-weight: 800 !important;
+                letter-spacing: 1px;
+                padding: 0 1.5rem 0.5rem 1.5rem !important;
+                color: var(--text-muted) !important;
+                text-align: left;
+            }
+            .table-floating thead th.text-end {
+                text-align: right !important;
+            }
+            .table-floating thead th.text-center {
+                text-align: center !important;
+            }
+            .table-floating tbody tr {
+                background: #ffffff;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+                border-radius: 24px;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .table-floating tbody tr:hover {
+                transform: translateY(-5px) scale(1.01);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+                z-index: 10;
+                position: relative;
+            }
+            .table-floating tbody td {
+                border: none !important;
+                padding: 1.5rem !important;
+                vertical-align: middle;
+                background: #ffffff;
+            }
+            .table-floating tbody td:first-child {
+                border-top-left-radius: 24px;
+                border-bottom-left-radius: 24px;
+                border-left: 6px solid transparent;
+            }
+            .table-floating tbody td:last-child {
+                border-top-right-radius: 24px;
+                border-bottom-right-radius: 24px;
+            }
+            
+            /* Status accent colors on the left border */
+            .table-floating tbody tr[data-status="menunggu"] td:first-child { border-left-color: var(--primary); }
+            .table-floating tbody tr[data-status="dipanggil"] td:first-child { border-left-color: var(--success); }
+            .table-floating tbody tr[data-status="selesai"] td:first-child { border-left-color: var(--text-muted); }
+            .table-floating tbody tr[data-status="dilewati"] td:first-child { border-left-color: #DB2777; }
+        }
+
+
+        /* Responsive Mobile Table to Cards */
+        @media (max-width: 768px) {
+            .table-mobile-cards, .table-mobile-cards thead, .table-mobile-cards tbody, .table-mobile-cards th, .table-mobile-cards td, .table-mobile-cards tr {
+                display: block;
+                width: 100% !important;
+            }
+            .table-mobile-cards thead {
+                display: none !important;
+            }
+            .table-mobile-cards tr {
+                margin-bottom: 1.25rem;
+                padding: 1.25rem;
+                border-radius: var(--radius-xl);
+                background: #ffffff;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+                border: 1px solid var(--border-color);
+                position: relative;
+                transition: all 0.3s ease;
+            }
+            .table-mobile-cards tr:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+            }
+            .table-mobile-cards td {
+                padding: 12px 0;
+                border-bottom: 1px dashed var(--border-color);
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: flex-start;
+                text-align: left;
+                font-size: 0.85rem;
+                gap: 4px;
+            }
+            .table-mobile-cards td:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+            .table-mobile-cards td::before {
+                content: attr(data-label);
+                display: block;
+                font-weight: 800;
+                color: var(--text-muted);
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 2px;
+            }
+            .table-mobile-cards .badge-kode-antrian {
+                font-size: 0.95rem !important;
+                padding: 6px 12px !important;
+            }
+            .table-mobile-cards td[data-label="Aksi"] {
+                flex-direction: row;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 8px;
+                padding-top: 16px;
+                flex-wrap: wrap;
+            }
+            .table-mobile-cards td[data-label="Aksi"]::before {
+                display: none;
+            }
+        }
+
+        /* ─── Buttons ─────────────────────────────────────── */
         .btn-app {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
@@ -213,6 +354,59 @@
             box-shadow: 0 15px 30px rgba(79, 70, 229, 0.25);
             color: white;
         }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            transition: all 0.3s;
+        }
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);
+            color: white;
+        }
+
+        .btn-gradient-danger {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            border: none;
+            transition: all 0.3s;
+        }
+        .btn-gradient-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+            color: white;
+        }
+
+        .btn-danger-custom {
+            background: #FEE2E2;
+            color: #DC2626;
+            border: 1px solid #FCA5A5;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .btn-danger-custom:hover {
+            background: #DC2626;
+            color: white;
+        }
+
+        .btn-success-custom {
+            background: #D1FAE5;
+            color: #059669;
+            border: 1px solid #6EE7B7;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .btn-success-custom:hover {
+            background: #059669;
+            color: white;
+        }
+        
         
         .btn-icon-circle {
             width: 42px;
@@ -324,6 +518,16 @@
             border: none;
             font-weight: 500;
             font-size: 0.9rem;
+        }
+
+        @media (max-width: 576px) {
+            .app-title { font-size: 0.95rem; }
+            .app-subtitle { font-size: 0.6rem; }
+            .btn-profile { padding: 4px 10px 4px 4px; gap: 6px; }
+            .btn-profile .avatar { width: 26px; height: 26px; font-size: 0.8rem; }
+            .app-bar .container { padding-left: 10px; padding-right: 10px; }
+            .btn-icon-circle { width: 36px; height: 36px; font-size: 1rem; }
+            header .btn-outline-primary { padding: 6px 10px !important; font-size: 0.75rem !important; }
         }
     </style>
     @stack('styles')
@@ -517,14 +721,27 @@
                         }
                     </style>
                 </head>
-                <body onload="window.print(); window.close();">
+                <body>
                     <div class="container">
                         <h1>BPS KOTA TEGAL</h1>
                         <p>Scan QR Code di bawah untuk Ambil Antrian Digital</p>
-                        <img src="${qrUrl}" alt="QR Code">
+                        <img id="qr-image" src="${qrUrl}" alt="QR Code">
                         <br>
                         <div class="url">${link}</div>
                     </div>
+                    <script>
+                        // Wait for the QR image to load before opening print dialog
+                        var img = document.getElementById('qr-image');
+                        img.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                            }, 250);
+                        };
+                        // Close window automatically after the print dialog is closed
+                        window.onafterprint = function() {
+                            window.close();
+                        };
+                    <\/script>
                 </body>
                 </html>
             `);

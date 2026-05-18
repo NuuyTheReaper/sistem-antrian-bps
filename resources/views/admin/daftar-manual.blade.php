@@ -182,7 +182,7 @@
 @section('content')
 <div class="container container-app">
     
-    <div class="mb-3 text-start px-2">
+    <div class="mb-3 text-start px-2 mt-2 mt-md-0 w-100">
         <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-light" style="border-radius: 12px; font-weight: 600;">
             <i class="bi bi-arrow-left me-1"></i> Kembali ke Dashboard
         </a>

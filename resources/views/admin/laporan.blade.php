@@ -160,6 +160,35 @@
         </div>
     </div>
 
+    {{-- Unduh Laporan Tahunan --}}
+    <div class="card-app p-4 mb-4">
+        <h5 class="fw-bold mb-3" style="color: var(--text-main);">
+            <i class="bi bi-download me-2 text-success"></i> Unduh Laporan Tahunan BPS
+        </h5>
+        <p class="text-muted mb-4" style="font-size: 0.85rem;">
+            Pilih tahun untuk memfilter data kunjungan antrian BPS, lalu klik tombol unduh untuk mengekspor data lengkap ke dalam file berformat CSV yang kompatibel dengan Microsoft Excel.
+        </p>
+        <form action="{{ route('admin.laporan.download') }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-12 col-sm-6 col-md-4">
+                <label class="form-label fw-semibold">Pilih Tahun Laporan</label>
+                <select name="tahun" class="form-select" style="height: auto; padding: 10px 16px; border-radius: 12px; border-color: var(--border-color); cursor: pointer;" required>
+                    @php
+                        $tahunSekarang = date('Y');
+                        $tahunMulai = 2024;
+                    @endphp
+                    @for ($y = $tahunSekarang; $y >= $tahunMulai; $y--)
+                        <option value="{{ $y }}">{{ $y }}</option>
+                    @endfor
+                </select>
+            </div>
+            <div class="col-12 col-sm-6 col-md-4">
+                <button type="submit" class="btn btn-success w-100" style="border-radius: 12px; font-weight: 600; padding: 12.5px 20px; font-size: 0.95rem; background: #10B981; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
+                    <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Unduh Laporan (.CSV)
+                </button>
+            </div>
+        </form>
+    </div>
+
     {{-- Ringkasan Statistik --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">

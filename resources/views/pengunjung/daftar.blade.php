@@ -279,7 +279,7 @@
                 <label class="form-label">Nomor WhatsApp / HP</label>
                 <div class="form-icon-wrapper">
                     <i class="bi bi-whatsapp"></i>
-                    <input type="tel" class="form-control @error('nomor_hp') is-invalid @enderror" name="nomor_hp" value="{{ old('nomor_hp') }}" placeholder="Contoh: 0812..." required>
+                    <input type="tel" class="form-control @error('nomor_hp') is-invalid @enderror" name="nomor_hp" value="{{ old('nomor_hp') }}" placeholder="Contoh: 0812..." maxlength="15" required>
                 </div>
                 @error('nomor_hp')
                     <div class="text-danger mt-1" style="font-size: 0.8rem;">{{ $message }}</div>

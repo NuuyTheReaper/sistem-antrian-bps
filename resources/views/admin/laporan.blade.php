@@ -180,13 +180,13 @@
         </div>
     </div>
 
-    {{-- Unduh Laporan Tahunan --}}
+    {{-- Unduh Laporan --}}
     <div class="card-app hover-floating p-4 mb-4">
         <h5 class="fw-bold mb-3" style="color: var(--text-main);">
-            <i class="bi bi-download me-2 text-success"></i> Unduh Laporan Tahunan BPS
+            <i class="bi bi-download me-2 text-success"></i> Unduh Laporan Antrian BPS
         </h5>
         <p class="text-muted mb-4" style="font-size: 0.85rem;">
-            Pilih tahun untuk memfilter data kunjungan antrian BPS, lalu klik tombol unduh untuk mengekspor data lengkap ke dalam file berformat CSV yang kompatibel dengan Microsoft Excel.
+            Pilih tahun dan bulan untuk memfilter data kunjungan antrian BPS, lalu klik tombol unduh untuk mengekspor data lengkap ke dalam file berformat CSV yang kompatibel dengan Microsoft Excel.
         </p>
         <form action="{{ route('admin.laporan.download') }}" method="GET" class="row g-3 align-items-end" target="_blank">
             <div class="col-12 col-sm-6 col-md-4">
@@ -202,6 +202,24 @@
                 </select>
             </div>
             <div class="col-12 col-sm-6 col-md-4">
+                <label class="form-label fw-semibold">Pilih Bulan Laporan</label>
+                <select name="bulan" class="form-select" style="height: auto; padding: 10px 16px; border-radius: 12px; border-color: var(--border-color); cursor: pointer;" required>
+                    <option value="semua" selected>Semua Bulan (Tahunan)</option>
+                    <option value="1">Januari</option>
+                    <option value="2">Februari</option>
+                    <option value="3">Maret</option>
+                    <option value="4">April</option>
+                    <option value="5">Mei</option>
+                    <option value="6">Juni</option>
+                    <option value="7">Juli</option>
+                    <option value="8">Agustus</option>
+                    <option value="9">September</option>
+                    <option value="10">Oktober</option>
+                    <option value="11">November</option>
+                    <option value="12">Desember</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-4">
                 <button type="submit" class="btn btn-success w-100" style="border-radius: 12px; font-weight: 600; padding: 12.5px 20px; font-size: 0.95rem; background: #10B981; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
                     <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Unduh Laporan (.CSV)
                 </button>

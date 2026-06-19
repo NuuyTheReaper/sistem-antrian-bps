@@ -82,10 +82,10 @@
             <table class="table table-floating table-mobile-cards align-middle">
                 <thead>
                     <tr>
-                        <th width="10%">KODE</th>
-                        <th width="25%">DATA PENGUNJUNG</th>
-                        <th width="15%">KONTAK & LAYANAN</th>
-                        <th width="15%">STATUS</th>
+                        <th width="8%">KODE</th>
+                        <th width="22%">DATA PENGUNJUNG</th>
+                        <th width="22%">KONTAK & LAYANAN</th>
+                        <th width="13%">STATUS</th>
                         <th width="15%">PETUGAS</th>
                         <th width="20%">CATATAN</th>
                     </tr>
@@ -94,17 +94,17 @@
                     @forelse($riwayat as $item)
                         <tr data-status="{{ $item->status }}">
                             <td data-label="Kode">
-                                <div class="badge-kode-antrian fs-6 py-2 px-3 fw-bold" style="border-radius: 12px; display: inline-block;">
+                                <div class="badge-kode-antrian fs-6 py-2 px-3 fw-bold text-nowrap" style="border-radius: 12px; display: inline-block;">
                                     {{ $item->kode_antrian }}
                                 </div>
                             </td>
                             <td data-label="Data Pengunjung">
                                 <div class="fw-bold" style="color: var(--text-main); font-size: 0.95rem;">{{ $item->nama }}</div>
                                 @if($item->nik)
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;"><i class="bi bi-card-id me-1 text-primary"></i>NIK: {{ $item->nik }}</small>
+                                    <small class="text-muted d-block text-nowrap" style="font-size: 0.75rem;"><i class="bi bi-card-id me-1 text-primary"></i>NIK: {{ $item->nik }}</small>
                                 @endif
                                 @if($item->jenis_kelamin)
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;"><i class="bi bi-gender-ambiguous me-1 text-primary"></i>{{ $item->jenis_kelamin }}</small>
+                                    <small class="text-muted d-block text-nowrap" style="font-size: 0.75rem;"><i class="bi bi-gender-ambiguous me-1 text-primary"></i>{{ $item->jenis_kelamin }}</small>
                                 @endif
                                 <small class="text-secondary d-block mt-1" style="font-size: 0.75rem; font-weight: 500;">
                                     <i class="bi bi-geo-alt me-1"></i>{{ $item->alamat }}
@@ -112,14 +112,14 @@
                             </td>
                             <td data-label="Kontak & Layanan">
                                 <div class="fw-semibold text-primary" style="font-size: 0.85rem;">{{ $item->keperluan }}</div>
-                                <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: 500;">
+                                <div class="text-muted mt-1 text-nowrap" style="font-size: 0.75rem; font-weight: 500;">
                                     <i class="bi bi-whatsapp text-success me-1"></i>{{ $item->nomor_hp }}
                                 </div>
                                 @if($item->email)
-                                    <small class="text-muted d-block" style="font-size: 0.72rem;"><i class="bi bi-envelope me-1"></i>{{ $item->email }}</small>
+                                    <small class="text-muted d-block text-nowrap" style="font-size: 0.72rem;"><i class="bi bi-envelope me-1"></i>{{ $item->email }}</small>
                                 @endif
                                 @if($item->pekerjaan)
-                                    <small class="text-muted d-block" style="font-size: 0.72rem;"><i class="bi bi-briefcase me-1"></i>{{ $item->pekerjaan }} ({{ $item->pendidikan_terakhir }})</small>
+                                    <small class="text-muted d-block text-nowrap" style="font-size: 0.72rem;"><i class="bi bi-briefcase me-1"></i>{{ $item->pekerjaan }} ({{ $item->pendidikan_terakhir }})</small>
                                 @endif
                             </td>
                             <td data-label="Status">
@@ -157,11 +157,15 @@
                             </td>
                             <td data-label="Catatan">
                                 @if($item->catatan_petugas)
-                                    <div class="p-2 bg-light border" style="border-radius: 8px; font-size: 0.78rem; font-style: italic; color: #475569;">
-                                        "{{ $item->catatan_petugas }}"
+                                    <div class="p-3 mx-2" 
+                                         style="background-color: rgba(79, 70, 229, 0.04); border-left: 3px solid var(--primary); border-radius: 8px; font-size: 0.8rem; color: #475569; line-height: 1.4;">
+                                        <div class="fw-medium" style="word-break: break-word;">{{ $item->catatan_petugas }}</div>
                                     </div>
                                 @else
-                                    <span class="text-muted" style="font-size: 0.8rem; font-style: italic;">Tidak ada catatan.</span>
+                                    <span class="text-muted d-inline-flex align-items-center gap-1.5 mx-2" style="font-size: 0.8rem;">
+                                        <i class="bi bi-dash-circle text-muted opacity-50" style="font-size: 0.8rem;"></i>
+                                        <span class="fst-italic">Tidak ada catatan</span>
+                                    </span>
                                 @endif
                             </td>
                         </tr>

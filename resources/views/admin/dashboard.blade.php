@@ -424,12 +424,13 @@
             <table class="table table-floating table-mobile-cards align-middle" id="tableAntrian">
                 <thead>
                     <tr>
-                        <th width="12%">KODE</th>
-                        <th width="22%">PENGUNJUNG</th>
-                        <th width="16%">KONTAK</th>
-                        <th width="20%">LAYANAN</th>
-                        <th width="15%">STATUS</th>
-                        <th width="15%" class="text-end">AKSI</th>
+                        <th width="10%">KODE</th>
+                        <th width="20%">PENGUNJUNG</th>
+                        <th width="15%">KONTAK</th>
+                        <th width="18%">LAYANAN</th>
+                        <th width="12%">STATUS</th>
+                        <th width="15%">CATATAN</th>
+                        <th width="10%" class="text-end">AKSI</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -440,7 +441,7 @@
                             data-status="{{ $item->status }}"
                             data-keperluan="{{ $item->keperluan }}">
                             <td data-label="Kode">
-                                <div class="badge-kode-antrian fs-6 py-2 px-3 fw-bold" 
+                                <div class="badge-kode-antrian fs-6 py-2 px-3 fw-bold text-nowrap" 
                                      style="border-radius: 12px; display: inline-block;">
                                     {{ $item->kode_antrian }}
                                 </div>
@@ -448,16 +449,16 @@
                             <td data-label="Pengunjung">
                                 <div class="fw-bold" style="color: var(--text-main);">{{ $item->nama }}</div>
                                 @if($item->nik)
-                                    <small class="text-muted d-block" style="font-size: 0.72rem;">NIK: {{ $item->nik }}</small>
+                                    <small class="text-muted d-block text-nowrap" style="font-size: 0.72rem;">NIK: {{ $item->nik }}</small>
                                 @endif
                                 <small class="text-muted" style="font-size: 0.75rem; font-weight: 500;">{{ Str::limit($item->alamat, 40) }}</small>
                             </td>
                             <td data-label="Kontak">
-                                <div class="fw-medium" style="font-size: 0.85rem;">
+                                <div class="fw-medium text-nowrap" style="font-size: 0.85rem;">
                                     <i class="bi bi-whatsapp text-success me-1"></i>{{ $item->nomor_hp }}
                                 </div>
                                 @if($item->email)
-                                    <small class="text-muted d-block" style="font-size: 0.72rem;">{{ $item->email }}</small>
+                                    <small class="text-muted d-block text-nowrap" style="font-size: 0.72rem;">{{ $item->email }}</small>
                                 @endif
                             </td>
                             <td data-label="Layanan">
@@ -480,6 +481,19 @@
                                         <i class="bi bi-exclamation-circle-fill"></i> Dilewati
                                     @endif
                                 </span>
+                            </td>
+                            <td data-label="Catatan">
+                                @if($item->status === 'selesai' && $item->catatan_petugas)
+                                    <div class="d-flex align-items-center">
+                                        <span class="d-inline-flex align-items-center px-3 py-1.5 text-truncate mx-2" 
+                                              style="border-radius: 8px; font-size: 0.72rem; max-width: 150px; font-weight: 500; background-color: rgba(79, 70, 229, 0.05); border: 1px solid rgba(79, 70, 229, 0.15); color: var(--text-muted);" 
+                                              title="{{ $item->catatan_petugas }}">
+                                            <span class="text-truncate">{{ $item->catatan_petugas }}</span>
+                                        </span>
+                                    </div>
+                                @else
+                                    <span class="text-muted opacity-50 mx-2">-</span>
+                                @endif
                             </td>
                             <td data-label="Aksi" class="text-end">
                                 @if($item->status === 'menunggu')
@@ -504,18 +518,13 @@
                                 @else
                                     <div class="text-end">
                                         <span class="badge bg-light text-secondary border fw-bold px-3 py-2" style="border-radius: 12px;"><i class="bi bi-check2-all me-1 text-success"></i> Tuntas</span>
-                                        @if($item->catatan_petugas)
-                                            <small class="text-muted d-block text-truncate mt-1" style="max-width: 150px; font-size: 0.65rem;" title="{{ $item->catatan_petugas }}">
-                                                "{{ $item->catatan_petugas }}"
-                                            </small>
-                                        @endif
                                     </div>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr id="emptyRow">
-                            <td colspan="6" class="text-center py-5 text-secondary">
+                            <td colspan="7" class="text-center py-5 text-secondary">
                                 <i class="bi bi-inbox fs-2 mb-2 d-block opacity-50"></i>
                                 <span class="fw-semibold">Belum ada data antrian hari ini.</span>
                             </td>
@@ -633,7 +642,7 @@
         if (antrians.length === 0) {
             tbody.innerHTML = `
                 <tr id="emptyRow">
-                    <td colspan="6" class="text-center py-5 text-secondary">
+                    <td colspan="7" class="text-center py-5 text-secondary">
                         <i class="bi bi-inbox fs-2 mb-2 d-block opacity-50"></i>
                         <span class="fw-semibold">Belum ada data antrian hari ini.</span>
                     </td>
@@ -680,17 +689,25 @@
                     </div>
                 `;
             } else {
-                let noteHtml = item.catatan_petugas ? `<small class="text-muted d-block text-truncate mt-1" style="max-width: 150px; font-size: 0.65rem;" title="${item.catatan_petugas}">"${item.catatan_petugas}"</small>` : '';
                 actions = `
                     <div class="text-end">
                         <span class="badge bg-light text-secondary border fw-bold px-3 py-2" style="border-radius: 12px;"><i class="bi bi-check2-all me-1 text-success"></i> Tuntas</span>
-                        ${noteHtml}
                     </div>
                 `;
             }
 
-            let nikHtml = item.nik ? `<small class="text-muted d-block" style="font-size: 0.72rem;">NIK: ${item.nik}</small>` : '';
-            let emailHtml = item.email ? `<small class="text-muted d-block" style="font-size: 0.72rem;">${item.email}</small>` : '';
+            let noteHtml = (item.status === 'selesai' && item.catatan_petugas) ? `
+                <div class="d-flex align-items-center">
+                    <span class="d-inline-flex align-items-center px-3 py-1.5 text-truncate mx-2" 
+                          style="border-radius: 8px; font-size: 0.72rem; max-width: 150px; font-weight: 500; background-color: rgba(79, 70, 229, 0.05); border: 1px solid rgba(79, 70, 229, 0.15); color: var(--text-muted);" 
+                          title="${item.catatan_petugas}">
+                        <span class="text-truncate">${item.catatan_petugas}</span>
+                    </span>
+                </div>
+            ` : '<span class="text-muted opacity-50 mx-2">-</span>';
+
+            let nikHtml = item.nik ? `<small class="text-muted d-block text-nowrap" style="font-size: 0.72rem;">NIK: ${item.nik}</small>` : '';
+            let emailHtml = item.email ? `<small class="text-muted d-block text-nowrap" style="font-size: 0.72rem;">${item.email}</small>` : '';
             let petugasHtml = item.petugas ? `<small class="text-success d-block fw-semibold" style="font-size: 0.72rem;"><i class="bi bi-person-fill-check me-1"></i>Petugas: ${item.petugas.name}</small>` : '';
 
             html += `
@@ -700,7 +717,7 @@
                     data-status="${item.status}"
                     data-keperluan="${item.keperluan}">
                     <td data-label="Kode">
-                        <div class="badge-kode-antrian fs-6 py-2 px-3 fw-bold" style="border-radius: 12px; display: inline-block;">
+                        <div class="badge-kode-antrian fs-6 py-2 px-3 fw-bold text-nowrap" style="border-radius: 12px; display: inline-block;">
                             ${item.kode_antrian}
                         </div>
                     </td>
@@ -710,7 +727,7 @@
                         <small class="text-muted" style="font-size: 0.75rem; font-weight: 500;">${item.alamat.substring(0, 40)}</small>
                     </td>
                     <td data-label="Kontak">
-                        <div class="fw-medium" style="font-size: 0.85rem;"><i class="bi bi-whatsapp text-success me-1"></i>${item.nomor_hp}</div>
+                        <div class="fw-medium text-nowrap" style="font-size: 0.85rem;"><i class="bi bi-whatsapp text-success me-1"></i>${item.nomor_hp}</div>
                         ${emailHtml}
                     </td>
                     <td data-label="Layanan">
@@ -718,6 +735,7 @@
                         ${petugasHtml}
                     </td>
                     <td data-label="Status">${statusBadge}</td>
+                    <td data-label="Catatan">${noteHtml}</td>
                     <td data-label="Aksi" class="text-end">${actions}</td>
                 </tr>
             `;
@@ -778,7 +796,7 @@
                 const tr = document.createElement('tr');
                 tr.id = 'emptyRow';
                 tr.innerHTML = `
-                    <td colspan="6" class="text-center py-5 text-secondary">
+                    <td colspan="7" class="text-center py-5 text-secondary">
                         <i class="bi bi-search fs-2 mb-2 d-block opacity-50"></i>
                         <span class="fw-semibold">Tidak ditemukan kecocokan data antrian.</span>
                     </td>

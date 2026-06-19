@@ -290,25 +290,40 @@ class AntrianController extends Controller
     }
 
     /**
-     * Download laporan tahunan dalam format CSV (hanya diakses Admin).
+     * Download laporan tahunan/bulanan dalam format CSV (hanya diakses Admin).
      */
     public function downloadLaporan(Request $request)
     {
         $request->validate([
             'tahun' => 'required|integer|min:2024|max:' . date('Y'),
+            'bulan' => 'nullable|string|in:semua,1,2,3,4,5,6,7,8,9,10,11,12',
         ]);
 
         $tahun = $request->tahun;
+        $bulan = $request->bulan;
 
-        // Ambil data antrian pada tahun tersebut
-        $data = Antrian::withTrashed()
+        // Ambil data antrian pada periode tersebut
+        $query = Antrian::withTrashed()
             ->with('petugas')
-            ->whereYear('tanggal_antrian', $tahun)
-            ->orderBy('tanggal_antrian', 'asc')
+            ->whereYear('tanggal_antrian', $tahun);
+
+        if ($bulan && $bulan !== 'semua') {
+            $query->whereMonth('tanggal_antrian', $bulan);
+            
+            $bulanIndo = [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ];
+            $namaBulan = $bulanIndo[(int)$bulan] ?? 'Bulan';
+            $filename = "laporan_antrian_bps_{$namaBulan}_{$tahun}.csv";
+        } else {
+            $filename = "laporan_antrian_bps_{$tahun}.csv";
+        }
+
+        $data = $query->orderBy('tanggal_antrian', 'asc')
             ->orderBy('nomor_antrian', 'asc')
             ->get();
-
-        $filename = "laporan_antrian_bps_{$tahun}.csv";
 
         $headers = [
             "Content-type"        => "text/csv; charset=UTF-8",

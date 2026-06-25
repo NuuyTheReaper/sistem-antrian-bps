@@ -39,10 +39,15 @@ class ExampleTest extends TestCase
     public function test_pengunjung_dapat_mendaftar_antrian(): void
     {
         $response = $this->post('/antrian/daftar', [
-            'nama'      => 'Budi Santoso',
-            'alamat'    => 'Jl. Merdeka No. 1',
-            'keperluan' => 'Konsultasi',
-            'nomor_hp'  => '08123456789',
+            'nama'                => 'Budi Santoso',
+            'alamat'              => 'Jl. Merdeka No. 1',
+            'keperluan'           => 'Konsultasi',
+            'nomor_hp'            => '08123456789',
+            'nik'                 => '1234567890123456',
+            'jenis_kelamin'       => 'Laki-laki',
+            'email'               => 'budi@example.com',
+            'pekerjaan'           => 'PNS',
+            'pendidikan_terakhir' => 'S1',
         ]);
 
         $response->assertRedirect();
@@ -61,18 +66,28 @@ class ExampleTest extends TestCase
     {
         // Daftar pertama
         $this->post('/antrian/daftar', [
-            'nama'      => 'Budi',
-            'alamat'    => 'Jl. Test',
-            'keperluan' => 'Konsultasi',
-            'nomor_hp'  => '08123456789',
+            'nama'                => 'Budi',
+            'alamat'              => 'Jl. Test',
+            'keperluan'           => 'Konsultasi',
+            'nomor_hp'            => '08123456789',
+            'nik'                 => '1234567890123456',
+            'jenis_kelamin'       => 'Laki-laki',
+            'email'               => 'budi@example.com',
+            'pekerjaan'           => 'PNS',
+            'pendidikan_terakhir' => 'S1',
         ]);
 
         // Daftar kedua dengan nomor HP yang sama
         $response = $this->post('/antrian/daftar', [
-            'nama'      => 'Budi Lain',
-            'alamat'    => 'Jl. Test 2',
-            'keperluan' => 'Pengaduan',
-            'nomor_hp'  => '08123456789',
+            'nama'                => 'Budi Lain',
+            'alamat'              => 'Jl. Test 2',
+            'keperluan'           => 'Pengaduan',
+            'nomor_hp'            => '08123456789',
+            'nik'                 => '1234567890123456',
+            'jenis_kelamin'       => 'Laki-laki',
+            'email'               => 'budi@example.com',
+            'pekerjaan'           => 'PNS',
+            'pendidikan_terakhir' => 'S1',
         ]);
 
         // Harus redirect ke tiket yang sudah ada, bukan membuat baru
@@ -127,7 +142,7 @@ class ExampleTest extends TestCase
      */
     public function test_admin_can_access_dashboard(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['role' => 'admin']);
 
         $response = $this->actingAs($user)->get('/admin/antrian');
 

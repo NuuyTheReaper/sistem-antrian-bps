@@ -72,7 +72,19 @@ class AntrianController extends Controller
     public function tiket($id)
     {
         $antrian = Antrian::findOrFail($id);
-        return view('pengunjung.tiket', compact('antrian'));
+
+        $sedangDipanggil = Antrian::hariIni()
+            ->where('keperluan', $antrian->keperluan)
+            ->where('status', 'dipanggil')
+            ->first();
+
+        $sisaAntrian = Antrian::hariIni()
+            ->where('keperluan', $antrian->keperluan)
+            ->where('status', 'menunggu')
+            ->where('nomor_antrian', '<', $antrian->nomor_antrian)
+            ->count();
+
+        return view('pengunjung.tiket', compact('antrian', 'sisaAntrian', 'sedangDipanggil'));
     }
 
     /**

@@ -356,6 +356,10 @@
                     <div style="font-weight: 800; font-size: 1.1rem;">{{ $antrian->keperluan }}</div>
                 </div>
             </div>
+
+            <div class="mt-3 text-center" style="font-size: 0.75rem; font-weight: 600; background: rgba(255, 255, 255, 0.12); padding: 8px 12px; border-radius: 8px; border: 1px dashed rgba(255, 255, 255, 0.25);">
+                <i class="bi bi-clock-history me-1"></i> Estimasi per antrian: 5 - 10 menit
+            </div>
         </div>
 
         {{-- Body --}}
@@ -370,7 +374,7 @@
                     </div>
                     <span class="info-text">Sedang Dipanggil</span>
                 </div>
-                <div class="info-right" id="sedangDipanggil" style="color: var(--primary);">-</div>
+                <div class="info-right" id="sedangDipanggil" style="color: var(--primary);">{{ $sedangDipanggil ? $sedangDipanggil->kode_antrian : '-' }}</div>
             </div>
 
             <div class="info-row">
@@ -380,7 +384,7 @@
                     </div>
                     <span class="info-text">Sisa Antrian</span>
                 </div>
-                <div class="info-right" id="sisaAntrian" style="color: #D97706;">...</div>
+                <div class="info-right" id="sisaAntrian" style="color: #D97706;">{{ $sisaAntrian }}</div>
             </div>
 
             <div class="info-row">
@@ -390,7 +394,24 @@
                     </div>
                     <span class="info-text">Estimasi Waktu</span>
                 </div>
-                <div class="info-right" id="estimasiWaktu" style="color: #059669;">...</div>
+                @php
+                    $initialSeconds = 0;
+                    if ($antrian->status === 'menunggu' && $sisaAntrian > 0) {
+                        $initialSeconds = $sisaAntrian * 450; // 7.5 menit per antrian (450 detik)
+                    }
+                    $initialTimerText = '00:00';
+                    if ($initialSeconds > 0) {
+                        $hrs = floor($initialSeconds / 3600);
+                        $mins = floor(($initialSeconds % 3600) / 60);
+                        $secs = $initialSeconds % 60;
+                        if ($hrs > 0) {
+                            $initialTimerText = sprintf('%02d:%02d:%02d', $hrs, $mins, $secs);
+                        } else {
+                            $initialTimerText = sprintf('%02d:%02d', $mins, $secs);
+                        }
+                    }
+                @endphp
+                <div class="info-right" id="estimasiWaktu" style="color: #059669;">{{ $initialTimerText }}</div>
             </div>
 
             {{-- Progress Bar --}}
@@ -567,6 +588,56 @@
         const worker = new Worker(URL.createObjectURL(blob));
         let prevStatus = '{{ $antrian->status }}';
 
+        let countdownInterval = null;
+        let currentSisaAntrian = {{ $sisaAntrian }};
+        let remainingSeconds = {{ $initialSeconds }};
+        let currentStatus = '{{ $antrian->status }}';
+
+        function updateTimerDisplay() {
+            const el = document.getElementById('estimasiWaktu');
+            if (!el) return;
+            
+            if (remainingSeconds <= 0) {
+                el.textContent = '00:00';
+                return;
+            }
+
+            const hrs = Math.floor(remainingSeconds / 3600);
+            const mins = Math.floor((remainingSeconds % 3600) / 60);
+            const secs = remainingSeconds % 60;
+
+            let displayStr = '';
+            if (hrs > 0) {
+                displayStr += String(hrs).padStart(2, '0') + ':';
+            }
+            displayStr += String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+            
+            el.textContent = displayStr;
+        }
+
+        function runCountdown() {
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            if (currentStatus !== 'menunggu' || currentSisaAntrian <= 0) {
+                remainingSeconds = 0;
+                updateTimerDisplay();
+                return;
+            }
+
+            countdownInterval = setInterval(() => {
+                if (remainingSeconds > 0) {
+                    remainingSeconds--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+            }, 1000);
+        }
+
+        // Mulai countdown pertama kali saat halaman dimuat
+        runCountdown();
+
         worker.onmessage = (e) => updateUI(e.data);
         worker.postMessage('start');
 
@@ -574,7 +645,21 @@
             if(!data) return;
             document.getElementById('sedangDipanggil').textContent = data.sedang_dipanggil;
             document.getElementById('sisaAntrian').textContent = data.sisa_antrian;
-            document.getElementById('estimasiWaktu').textContent = data.estimasi_menit + ' min';
+            
+            // Kelola countdown dinamis saat ada data baru dari polling
+            const oldStatus = currentStatus;
+            currentStatus = data.status;
+            
+            if (data.sisa_antrian !== currentSisaAntrian || currentStatus !== oldStatus) {
+                currentSisaAntrian = data.sisa_antrian;
+                if (currentStatus === 'menunggu' && currentSisaAntrian > 0) {
+                    remainingSeconds = currentSisaAntrian * 450; // Reset ke estimasi baru
+                } else {
+                    remainingSeconds = 0;
+                }
+                updateTimerDisplay();
+                runCountdown();
+            }
             
             const pct = Math.min(Math.round((data.sudah_dilayani / (data.total_antrian_keperluan || 1)) * 100), 100);
             document.getElementById('progressBar').style.width = pct + '%';

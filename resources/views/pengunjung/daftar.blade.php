@@ -351,12 +351,7 @@
     </div>
     </div>
     
-    <div class="text-center mt-4">
-        <small class="text-muted" style="font-weight: 500;">
-            <i class="bi bi-shield-check me-1 text-success"></i>
-            Data Anda aman dan terenkripsi
-        </small>
-    </div>
+
 
 </div>
 @endsection

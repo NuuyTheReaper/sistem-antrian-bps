@@ -441,13 +441,7 @@
         </div>
     </div>
 
-    {{-- Footer --}}
-    <div class="text-center mt-4">
-        <small class="text-muted" style="font-weight: 500;">
-            <i class="bi bi-shield-check me-1 text-success"></i>
-            Monitoring Aktif BPS Tegal
-        </small>
-    </div>
+
 
 </div>
 

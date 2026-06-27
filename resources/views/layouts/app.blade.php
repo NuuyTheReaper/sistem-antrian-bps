@@ -42,8 +42,15 @@
             background-color: var(--app-bg);
             color: var(--text-main);
             -webkit-tap-highlight-color: transparent;
-            padding-bottom: 40px; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
             position: relative;
+        }
+
+        main {
+            flex: 1 0 auto;
         }
 
         body::before {
@@ -529,6 +536,42 @@
             .btn-icon-circle { width: 36px; height: 36px; font-size: 1rem; }
             header .btn-outline-primary { padding: 6px 10px !important; font-size: 0.75rem !important; }
         }
+
+        /* Global Footer Style */
+        .app-footer {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(226, 232, 240, 0.6);
+            padding: 32px 0;
+            margin-top: 48px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        .app-footer .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .app-footer .footer-logo {
+            height: 38px;
+            object-fit: contain;
+        }
+        .app-footer .footer-title {
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: var(--text-main);
+            margin: 0;
+            letter-spacing: -0.3px;
+        }
+        .app-footer .footer-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
     </style>
     @stack('styles')
 </head>
@@ -617,6 +660,48 @@
     <main class="py-3">
         @yield('content')
     </main>
+
+    {{-- Global Footer --}}
+    <footer class="app-footer mt-auto">
+        <div class="container" style="max-width: 1200px;">
+            <div class="row align-items-center justify-content-between g-4">
+                <div class="col-12 col-md-6 d-flex flex-column align-items-center align-items-md-start">
+                    <div class="footer-brand">
+                        <img src="{{ asset('images/logo-uhn.png') }}" alt="Logo UHN" class="footer-logo">
+                        <div>
+                            <h5 class="footer-title">Universitas Harkat Negeri</h5>
+                            <span class="footer-subtitle">Mahasiswa Pengembang Sistem</span>
+                        </div>
+                    </div>
+                    <p class="mb-0 text-center text-md-start" style="font-size: 0.8rem; opacity: 0.85; max-width: 480px;">
+                        Sistem Antrian Cerdas dikembangkan oleh Mahasiswa Universitas Harkat Negeri untuk modernisasi dan digitalisasi layanan publik pada Badan Pusat Statistik Kota Tegal.
+                    </p>
+                </div>
+                <div class="col-12 col-md-6 d-flex flex-column align-items-center align-items-md-end gap-2">
+                    <div class="d-flex gap-3 text-muted">
+                        <a href="https://harkatnegeri.ac.id" target="_blank" class="text-decoration-none text-muted hover:text-primary transition" style="font-size: 0.8rem;">
+                            <i class="bi bi-globe me-1"></i> harkatnegeri.ac.id
+                        </a>
+                        <span class="opacity-25">|</span>
+                        <a href="#" class="text-decoration-none text-muted hover:text-primary transition" style="font-size: 0.8rem;">
+                            <i class="bi bi-envelope me-1"></i> Hubungi IT Support
+                        </a>
+                    </div>
+                    <div style="font-size: 0.75rem; opacity: 0.75;" class="text-center text-md-end">
+                        &copy; {{ date('Y') }} Universitas Harkat Negeri & BPS Kota Tegal. Hak Cipta Dilindungi.
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill" style="font-size: 0.65rem;">
+                            <i class="bi bi-shield-fill-check me-1"></i> Sistem Terenkripsi & Aman
+                        </span>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill" style="font-size: 0.65rem;">
+                            <i class="bi bi-cloud-check-fill me-1"></i> Monitoring Online Aktif
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     

@@ -135,6 +135,11 @@ class AntrianController extends Controller
      */
     public function dashboard()
     {
+        // Bersihkan antrian hari sebelumnya yang masih "menunggu" menjadi "dilewati"
+        Antrian::whereDate('tanggal_antrian', '<', Carbon::today())
+            ->where('status', 'menunggu')
+            ->update(['status' => 'dilewati']);
+
         $antrians = Antrian::hariIni()
             ->with('petugas')
             ->orderBy('nomor_antrian', 'asc')
@@ -272,6 +277,11 @@ class AntrianController extends Controller
      */
     public function apiDashboardData()
     {
+        // Bersihkan antrian hari sebelumnya yang masih "menunggu" menjadi "dilewati"
+        Antrian::whereDate('tanggal_antrian', '<', Carbon::today())
+            ->where('status', 'menunggu')
+            ->update(['status' => 'dilewati']);
+
         $antrians = Antrian::hariIni()
             ->with('petugas')
             ->orderBy('nomor_antrian', 'asc')
@@ -302,6 +312,87 @@ class AntrianController extends Controller
     }
 
     /**
+     * Tampilkan halaman preview laporan.
+     */
+    public function previewLaporan(Request $request)
+    {
+        $request->validate([
+            'tahun' => 'required|integer|min:2024|max:' . date('Y'),
+            'bulan' => 'nullable|string|in:semua,1,2,3,4,5,6,7,8,9,10,11,12',
+            'keperluan' => 'nullable|string|in:semua,Konsultasi,Pengaduan,Rekomendasi Statistik,Perpustakaan',
+        ]);
+
+        $tahun = $request->tahun;
+        $bulan = $request->bulan ?? 'semua';
+        $keperluan = $request->keperluan ?? 'semua';
+
+        $query = Antrian::withTrashed()->with('petugas')->whereYear('tanggal_antrian', $tahun);
+
+        if ($bulan !== 'semua') {
+            $query->whereMonth('tanggal_antrian', $bulan);
+        }
+
+        if ($keperluan !== 'semua') {
+            $query->where('keperluan', $keperluan);
+        }
+
+        $data = $query->orderBy('tanggal_antrian', 'asc')
+            ->orderBy('nomor_antrian', 'asc')
+            ->get();
+
+        return view('admin.laporan-preview', compact('data', 'tahun', 'bulan', 'keperluan'));
+    }
+
+    /**
+     * Tampilkan halaman cetak HTML (untuk PDF) dengan format resmi BPS.
+     */
+    public function cetakLaporan(Request $request)
+    {
+        $request->validate([
+            'tahun' => 'required|integer|min:2024|max:' . date('Y'),
+            'bulan' => 'nullable|string|in:semua,1,2,3,4,5,6,7,8,9,10,11,12',
+            'keperluan' => 'nullable|string|in:semua,Konsultasi,Pengaduan,Rekomendasi Statistik,Perpustakaan',
+        ]);
+
+        $tahun = $request->tahun;
+        $bulan = $request->bulan ?? 'semua';
+        $keperluan = $request->keperluan ?? 'semua';
+
+        $query = Antrian::withTrashed()->with('petugas')->whereYear('tanggal_antrian', $tahun);
+
+        if ($bulan !== 'semua') {
+            $query->whereMonth('tanggal_antrian', $bulan);
+        }
+
+        if ($keperluan !== 'semua') {
+            $query->where('keperluan', $keperluan);
+        }
+
+        $data = $query->orderBy('tanggal_antrian', 'asc')
+            ->orderBy('nomor_antrian', 'asc')
+            ->get();
+
+        return view('admin.laporan-cetak', compact('data', 'tahun', 'bulan', 'keperluan'));
+    }
+
+    /**
+     * Generate Link Laporan untuk Kepala BPS (Signed Route 7 Hari)
+     */
+    public function generateSharedLink(Request $request)
+    {
+        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'laporan.shared', now()->addDays(7), [
+                'tahun' => $request->tahun,
+                'bulan' => $request->bulan,
+                'keperluan' => $request->keperluan,
+                'nama_kepala' => $request->nama_kepala,
+                'nip' => $request->nip,
+            ]
+        );
+        return back()->with('shared_link', $url);
+    }
+
+    /**
      * Download laporan tahunan/bulanan dalam format CSV (hanya diakses Admin).
      */
     public function downloadLaporan(Request $request)
@@ -309,17 +400,19 @@ class AntrianController extends Controller
         $request->validate([
             'tahun' => 'required|integer|min:2024|max:' . date('Y'),
             'bulan' => 'nullable|string|in:semua,1,2,3,4,5,6,7,8,9,10,11,12',
+            'keperluan' => 'nullable|string|in:semua,Konsultasi,Pengaduan,Rekomendasi Statistik,Perpustakaan',
         ]);
 
         $tahun = $request->tahun;
-        $bulan = $request->bulan;
+        $bulan = $request->bulan ?? 'semua';
+        $keperluan = $request->keperluan ?? 'semua';
 
         // Ambil data antrian pada periode tersebut
         $query = Antrian::withTrashed()
             ->with('petugas')
             ->whereYear('tanggal_antrian', $tahun);
 
-        if ($bulan && $bulan !== 'semua') {
+        if ($bulan !== 'semua') {
             $query->whereMonth('tanggal_antrian', $bulan);
             
             $bulanIndo = [
@@ -331,6 +424,11 @@ class AntrianController extends Controller
             $filename = "laporan_antrian_bps_{$namaBulan}_{$tahun}.csv";
         } else {
             $filename = "laporan_antrian_bps_{$tahun}.csv";
+        }
+
+        if ($keperluan !== 'semua') {
+            $query->where('keperluan', $keperluan);
+            $filename = str_replace('.csv', "_".str_replace(' ', '_', strtolower($keperluan)).".csv", $filename);
         }
 
         $data = $query->orderBy('tanggal_antrian', 'asc')
@@ -364,7 +462,7 @@ class AntrianController extends Controller
                 // Hitung durasi layanan dalam menit
                 $durasi = '-';
                 if ($item->waktu_dipanggil && $item->waktu_selesai) {
-                    $durasi = $item->waktu_dipanggil->diffInMinutes($item->waktu_selesai);
+                    $durasi = ceil($item->waktu_dipanggil->diffInSeconds($item->waktu_selesai) / 60);
                 }
 
                 fputcsv($file, [

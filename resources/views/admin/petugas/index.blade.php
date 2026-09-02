@@ -85,7 +85,7 @@
                             <h5 class="fw-bold mb-0" style="color: var(--text-main); font-size: 1.05rem;">{{ $item->name }}</h5>
                             <p class="text-secondary mb-1" style="font-size: 0.85rem;"><i class="bi bi-envelope me-1"></i>{{ $item->email }}</p>
                             <span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">
-                                <i class="bi bi-person-badge-fill me-1 text-primary"></i>Petugas Pelayanan
+                                <i class="bi bi-person-badge-fill me-1 text-primary"></i>{{ $item->role === 'kepala_bps' ? 'Kepala BPS' : 'Petugas Pelayanan' }}
                             </span>
                         </div>
                     </div>
@@ -133,6 +133,17 @@
                                     <div class="form-icon-wrapper">
                                         <i class="bi bi-envelope"></i>
                                         <input type="email" class="form-control" name="email" value="{{ old('email', $item->email) }}" required>
+                                    </div>
+                                </div>
+                                {{-- Role --}}
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Hak Akses (Role)</label>
+                                    <div class="form-icon-wrapper">
+                                        <i class="bi bi-shield-check"></i>
+                                        <select name="role" class="form-select form-control" required style="padding-left: 48px; height: 48px; border-radius: 12px; cursor: pointer;">
+                                            <option value="petugas" {{ (old('role', $item->role) == 'petugas') ? 'selected' : '' }}>Petugas Pelayanan</option>
+                                            <option value="kepala_bps" {{ (old('role', $item->role) == 'kepala_bps') ? 'selected' : '' }}>Kepala BPS</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <hr class="my-4 text-muted">
@@ -204,6 +215,20 @@
                             <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" placeholder="Masukkan email petugas" required>
                         </div>
                         @error('email')
+                            <div class="text-danger mt-1" style="font-size: 0.8rem;">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    {{-- Role --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Hak Akses (Role)</label>
+                        <div class="form-icon-wrapper">
+                            <i class="bi bi-shield-check"></i>
+                            <select name="role" class="form-select form-control @error('role') is-invalid @enderror" required style="padding-left: 48px; height: 48px; border-radius: 12px; cursor: pointer;">
+                                <option value="petugas" {{ old('role') == 'petugas' ? 'selected' : '' }}>Petugas Pelayanan</option>
+                                <option value="kepala_bps" {{ old('role') == 'kepala_bps' ? 'selected' : '' }}>Kepala BPS</option>
+                            </select>
+                        </div>
+                        @error('role')
                             <div class="text-danger mt-1" style="font-size: 0.8rem;">{{ $message }}</div>
                         @enderror
                     </div>

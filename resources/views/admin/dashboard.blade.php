@@ -223,9 +223,11 @@
             </p>
         </div>
         <div class="d-flex gap-3">
+            @if(!Auth::user()->isKepalaBps())
             <a href="{{ route('admin.daftar-manual') }}" class="btn btn-gradient text-white d-inline-flex align-items-center justify-content-center" style="border-radius: 20px; font-weight: 600; padding: 10px 24px; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2); transition: all 0.3s;">
                 <i class="bi bi-person-plus-fill me-2"></i> Daftar Manual
             </a>
+            @endif
             @if(Auth::user()->role === 'admin')
                 <form action="{{ route('admin.reset') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mereset semua data antrian HARI INI? Tindakan ini tidak dapat dibatalkan.')" class="m-0">
                     @csrf
@@ -253,6 +255,7 @@
                         {{ $sedangDipanggilKonsultasi ? $sedangDipanggilKonsultasi->kode_antrian : '-' }}
                     </div>
                 </div>
+                @if(!Auth::user()->isKepalaBps())
                 <div class="px-4 pb-4 position-relative" style="z-index: 2;">
                     <form action="{{ route('admin.panggil', 'Konsultasi') }}" method="POST">
                         @csrf
@@ -261,6 +264,7 @@
                         </button>
                     </form>
                 </div>
+                @endif
             </div>
         </div>
 
@@ -278,6 +282,7 @@
                         {{ $sedangDipanggilPengaduan ? $sedangDipanggilPengaduan->kode_antrian : '-' }}
                     </div>
                 </div>
+                @if(!Auth::user()->isKepalaBps())
                 <div class="px-4 pb-4 position-relative" style="z-index: 2;">
                     <form action="{{ route('admin.panggil', 'Pengaduan') }}" method="POST">
                         @csrf
@@ -286,6 +291,7 @@
                         </button>
                     </form>
                 </div>
+                @endif
             </div>
         </div>
 
@@ -303,6 +309,7 @@
                         {{ $sedangDipanggilStatistik ? $sedangDipanggilStatistik->kode_antrian : '-' }}
                     </div>
                 </div>
+                @if(!Auth::user()->isKepalaBps())
                 <div class="px-4 pb-4 position-relative" style="z-index: 2;">
                     <form action="{{ route('admin.panggil', 'Rekomendasi Statistik') }}" method="POST">
                         @csrf
@@ -311,6 +318,7 @@
                         </button>
                     </form>
                 </div>
+                @endif
             </div>
         </div>
 
@@ -328,6 +336,7 @@
                         {{ $sedangDipanggilPerpustakaan ? $sedangDipanggilPerpustakaan->kode_antrian : '-' }}
                     </div>
                 </div>
+                @if(!Auth::user()->isKepalaBps())
                 <div class="px-4 pb-4 position-relative" style="z-index: 2;">
                     <form action="{{ route('admin.panggil', 'Perpustakaan') }}" method="POST">
                         @csrf
@@ -336,6 +345,7 @@
                         </button>
                     </form>
                 </div>
+                @endif
             </div>
         </div>
     </div>
@@ -496,29 +506,33 @@
                                 @endif
                             </td>
                             <td data-label="Aksi" class="text-end">
-                                @if($item->status === 'menunggu')
-                                    <form action="{{ route('admin.lewati', $item->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold" style="background: transparent; color: #EF4444; border: 1px solid #FECDD3; border-radius: 20px; transition: all 0.2s;" onmouseover="this.style.background='#FEF2F2'; this.style.borderColor='#FCA5A5';" onmouseout="this.style.background='transparent'; this.style.borderColor='#FECDD3';" title="Lewati antrian">
-                                            Lewati <i class="bi bi-arrow-right-short ms-1"></i>
-                                        </button>
-                                    </form>
-                                @elseif($item->status === 'dipanggil')
-                                    <div class="d-flex flex-wrap justify-content-end gap-2">
-                                        <button type="button" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold text-white" style="background: #10B981; border: none; border-radius: 20px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);" onclick="showSelesaiModal({{ $item->id }})" title="Selesai dilayani">
-                                            <i class="bi bi-check-lg me-1"></i> Selesai
-                                        </button>
-                                        <form action="{{ route('admin.lewati', $item->id) }}" method="POST" class="m-0">
+                                @if(Auth::user()->isKepalaBps())
+                                    <span class="text-muted">-</span>
+                                @else
+                                    @if($item->status === 'menunggu')
+                                        <form action="{{ route('admin.lewati', $item->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button type="submit" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold" style="background: transparent; color: #EF4444; border: 1px solid #FECDD3; border-radius: 20px; transition: all 0.2s;" onmouseover="this.style.background='#FEF2F2'; this.style.borderColor='#FCA5A5';" onmouseout="this.style.background='transparent'; this.style.borderColor='#FECDD3';" title="Lewati antrian">
                                                 Lewati <i class="bi bi-arrow-right-short ms-1"></i>
                                             </button>
                                         </form>
-                                    </div>
-                                @else
-                                    <div class="text-end">
-                                        <span class="badge bg-light text-secondary border fw-bold px-3 py-2" style="border-radius: 12px;"><i class="bi bi-check2-all me-1 text-success"></i> Tuntas</span>
-                                    </div>
+                                    @elseif($item->status === 'dipanggil')
+                                        <div class="d-flex flex-wrap justify-content-end gap-2">
+                                            <button type="button" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold text-white" style="background: #10B981; border: none; border-radius: 20px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);" onclick="showSelesaiModal({{ $item->id }})" title="Selesai dilayani">
+                                                <i class="bi bi-check-lg me-1"></i> Selesai
+                                            </button>
+                                            <form action="{{ route('admin.lewati', $item->id) }}" method="POST" class="m-0">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold" style="background: transparent; color: #EF4444; border: 1px solid #FECDD3; border-radius: 20px; transition: all 0.2s;" onmouseover="this.style.background='#FEF2F2'; this.style.borderColor='#FCA5A5';" onmouseout="this.style.background='transparent'; this.style.borderColor='#FECDD3';" title="Lewati antrian">
+                                                    Lewati <i class="bi bi-arrow-right-short ms-1"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    @else
+                                        <div class="text-end">
+                                            <span class="badge bg-light text-secondary border fw-bold px-3 py-2" style="border-radius: 12px;"><i class="bi bi-check2-all me-1 text-success"></i> Tuntas</span>
+                                        </div>
+                                    @endif
                                 @endif
                             </td>
                         </tr>
@@ -573,6 +587,7 @@
     // ═══════════════════════════════════════════════════════════
     const baseUrl = "{{ url('/') }}";
     const csrf    = "{{ csrf_token() }}";
+    const isKepalaBps = {{ Auth::user()->isKepalaBps() ? 'true' : 'false' }};
 
     // ═══════════════════════════════════════════════════════════
     //  FUNGSI TRIGGER MODAL SELESAI
@@ -665,35 +680,39 @@
             }
 
             let actions = '';
-            if (item.status === 'menunggu') {
-                actions = `
-                    <form action="${baseUrl}/admin/antrian/lewati/${item.id}" method="POST" class="d-inline">
-                        <input type="hidden" name="_token" value="${csrf}">
-                        <button type="submit" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold" style="background: transparent; color: #EF4444; border: 1px solid #FECDD3; border-radius: 20px; transition: all 0.2s;" onmouseover="this.style.background='#FEF2F2'; this.style.borderColor='#FCA5A5';" onmouseout="this.style.background='transparent'; this.style.borderColor='#FECDD3';" title="Lewati antrian">
-                            Lewati <i class="bi bi-arrow-right-short ms-1"></i>
-                        </button>
-                    </form>
-                `;
-            } else if (item.status === 'dipanggil') {
-                actions = `
-                    <div class="d-flex flex-wrap justify-content-end gap-2">
-                        <button type="button" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold text-white" style="background: #10B981; border: none; border-radius: 20px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);" onclick="showSelesaiModal(${item.id})" title="Selesai dilayani">
-                            <i class="bi bi-check-lg me-1"></i> Selesai
-                        </button>
-                        <form action="${baseUrl}/admin/antrian/lewati/${item.id}" method="POST" class="m-0">
+            if (isKepalaBps) {
+                actions = '<span class="text-muted">-</span>';
+            } else {
+                if (item.status === 'menunggu') {
+                    actions = `
+                        <form action="${baseUrl}/admin/antrian/lewati/${item.id}" method="POST" class="d-inline">
                             <input type="hidden" name="_token" value="${csrf}">
                             <button type="submit" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold" style="background: transparent; color: #EF4444; border: 1px solid #FECDD3; border-radius: 20px; transition: all 0.2s;" onmouseover="this.style.background='#FEF2F2'; this.style.borderColor='#FCA5A5';" onmouseout="this.style.background='transparent'; this.style.borderColor='#FECDD3';" title="Lewati antrian">
                                 Lewati <i class="bi bi-arrow-right-short ms-1"></i>
                             </button>
                         </form>
-                    </div>
-                `;
-            } else {
-                actions = `
-                    <div class="text-end">
-                        <span class="badge bg-light text-secondary border fw-bold px-3 py-2" style="border-radius: 12px;"><i class="bi bi-check2-all me-1 text-success"></i> Tuntas</span>
-                    </div>
-                `;
+                    `;
+                } else if (item.status === 'dipanggil') {
+                    actions = `
+                        <div class="d-flex flex-wrap justify-content-end gap-2">
+                            <button type="button" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold text-white" style="background: #10B981; border: none; border-radius: 20px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);" onclick="showSelesaiModal(${item.id})" title="Selesai dilayani">
+                                <i class="bi bi-check-lg me-1"></i> Selesai
+                            </button>
+                            <form action="${baseUrl}/admin/antrian/lewati/${item.id}" method="POST" class="m-0">
+                                <input type="hidden" name="_token" value="${csrf}">
+                                <button type="submit" class="btn btn-sm d-inline-flex align-items-center px-3 py-1 fw-bold" style="background: transparent; color: #EF4444; border: 1px solid #FECDD3; border-radius: 20px; transition: all 0.2s;" onmouseover="this.style.background='#FEF2F2'; this.style.borderColor='#FCA5A5';" onmouseout="this.style.background='transparent'; this.style.borderColor='#FECDD3';" title="Lewati antrian">
+                                    Lewati <i class="bi bi-arrow-right-short ms-1"></i>
+                                </button>
+                            </form>
+                        </div>
+                    `;
+                } else {
+                    actions = `
+                        <div class="text-end">
+                            <span class="badge bg-light text-secondary border fw-bold px-3 py-2" style="border-radius: 12px;"><i class="bi bi-check2-all me-1 text-success"></i> Tuntas</span>
+                        </div>
+                    `;
+                }
             }
 
             let noteHtml = (item.status === 'selesai' && item.catatan_petugas) ? `

@@ -14,7 +14,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $petugasList = User::where('role', 'petugas')
+        $petugasList = User::whereIn('role', ['petugas', 'kepala_bps'])
             ->orderBy('name', 'asc')
             ->get();
 
@@ -30,13 +30,14 @@ class UserController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
+            'role'     => 'required|string|in:petugas,kepala_bps',
         ]);
 
         User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role'     => 'petugas', // Hak akses petugas secara default
+            'role'     => $request->role,
         ]);
 
         return redirect()->route('admin.petugas.index')->with('sukses', 'Akun Petugas berhasil ditambahkan.');
@@ -53,10 +54,12 @@ class UserController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:6|confirmed',
+            'role'     => 'required|string|in:petugas,kepala_bps',
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
+        $user->role = $request->role;
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);

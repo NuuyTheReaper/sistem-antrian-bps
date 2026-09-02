@@ -47,6 +47,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Cek apakah user adalah kepala bps.
+     */
+    public function isKepalaBps(): bool
+    {
+        return $this->role === 'kepala_bps';
+    }
+
+    /**
      * Relasi ke data antrian yang dilayani.
      */
     public function antrians()

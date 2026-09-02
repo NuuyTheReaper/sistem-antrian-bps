@@ -188,7 +188,7 @@
         <p class="text-muted mb-4" style="font-size: 0.85rem;">
             Pilih tahun dan bulan untuk memfilter data kunjungan antrian BPS, lalu klik tombol unduh untuk mengekspor data lengkap ke dalam file berformat CSV yang kompatibel dengan Microsoft Excel.
         </p>
-        <form action="{{ route('admin.laporan.download') }}" method="GET" class="row g-3 align-items-end" target="_blank">
+        <form action="{{ route('admin.laporan.preview') }}" method="GET" class="row g-3 align-items-end">
             <div class="col-12 col-sm-6 col-md-4">
                 <label class="form-label fw-semibold">Pilih Tahun Laporan</label>
                 <select name="tahun" class="form-select" style="height: auto; padding: 10px 16px; border-radius: 12px; border-color: var(--border-color); cursor: pointer;" required>
@@ -219,9 +219,19 @@
                     <option value="12">Desember</option>
                 </select>
             </div>
-            <div class="col-12 col-md-4">
-                <button type="submit" class="btn btn-success w-100" style="border-radius: 12px; font-weight: 600; padding: 12.5px 20px; font-size: 0.95rem; background: #10B981; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
-                    <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Unduh Laporan (.CSV)
+            <div class="col-12 col-sm-12 col-md-4">
+                <label class="form-label fw-semibold">Pilih Layanan</label>
+                <select name="keperluan" class="form-select" style="height: auto; padding: 10px 16px; border-radius: 12px; border-color: var(--border-color); cursor: pointer;" required>
+                    <option value="semua" selected>Semua Layanan</option>
+                    <option value="Konsultasi">Konsultasi</option>
+                    <option value="Pengaduan">Pengaduan</option>
+                    <option value="Rekomendasi Statistik">Rekomendasi Statistik</option>
+                    <option value="Perpustakaan">Perpustakaan</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-12 text-end mt-3">
+                <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius: 12px; font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);">
+                    <i class="bi bi-eye-fill me-1"></i> Tampilkan Laporan
                 </button>
             </div>
         </form>

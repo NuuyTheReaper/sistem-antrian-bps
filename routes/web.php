@@ -40,15 +40,23 @@ Route::get('/api/antrian/status/{id}', [AntrianController::class, 'apiStatus'])
     ->name('api.antrian.status');
 
 // ═══════════════════════════════════════════════════════════
+//  SISI PUBLIK (Share Link Laporan)
+// ═══════════════════════════════════════════════════════════
+
+Route::get('/laporan/shared', [AntrianController::class, 'cetakLaporan'])
+    ->name('laporan.shared')
+    ->middleware('signed');
+
+// ═══════════════════════════════════════════════════════════
 //  SISI PETUGAS (Admin/Petugas) — Dilindungi Auth & Role
 // ═══════════════════════════════════════════════════════════
 
 Route::prefix('admin')->middleware('auth')->group(function () {
 
     // ───────────────────────────────────────────────────────
-    //  AKSES BERSAMA (Admin & Petugas)
+    //  AKSES BERSAMA (Admin, Petugas, Kepala BPS)
     // ───────────────────────────────────────────────────────
-    Route::middleware(['role:admin,petugas'])->group(function () {
+    Route::middleware(['role:admin,petugas,kepala_bps'])->group(function () {
         // Dashboard utama
         Route::get('/antrian', [AntrianController::class, 'dashboard'])
             ->name('admin.dashboard');
@@ -80,24 +88,41 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     });
 
     // ───────────────────────────────────────────────────────
+    //  HAK AKSES LAPORAN (Admin & Kepala BPS)
+    // ───────────────────────────────────────────────────────
+    Route::middleware(['role:admin,kepala_bps'])->group(function () {
+        // Halaman Laporan & Statistik
+        Route::get('/laporan', [AntrianController::class, 'laporan'])
+            ->name('admin.laporan');
+
+        // Preview Laporan
+        Route::get('/laporan/preview', [AntrianController::class, 'previewLaporan'])
+            ->name('admin.laporan.preview');
+
+        // Cetak Laporan (PDF HTML)
+        Route::get('/laporan/cetak', [AntrianController::class, 'cetakLaporan'])
+            ->name('admin.laporan.cetak');
+
+        // Buat Link Shared Laporan
+        Route::post('/laporan/generate-link', [AntrianController::class, 'generateSharedLink'])
+            ->name('admin.laporan.generate-link');
+
+        // Download Laporan Tahunan (.CSV)
+        Route::get('/laporan/download', [AntrianController::class, 'downloadLaporan'])
+            ->name('admin.laporan.download');
+
+        // API Data Laporan
+        Route::get('/api/laporan', [AntrianController::class, 'apiLaporanData'])
+            ->name('api.admin.laporan');
+    });
+
+    // ───────────────────────────────────────────────────────
     //  KHUSUS HAK AKSES ADMIN
     // ───────────────────────────────────────────────────────
     Route::middleware(['role:admin'])->group(function () {
         // Reset harian
         Route::post('/antrian/reset', [AntrianController::class, 'resetHarian'])
             ->name('admin.reset');
-
-        // Halaman Laporan & Statistik
-        Route::get('/laporan', [AntrianController::class, 'laporan'])
-            ->name('admin.laporan');
-
-        // API Data Laporan
-        Route::get('/api/laporan', [AntrianController::class, 'apiLaporanData'])
-            ->name('api.admin.laporan');
-
-        // Download Laporan Tahunan (.CSV)
-        Route::get('/laporan/download', [AntrianController::class, 'downloadLaporan'])
-            ->name('admin.laporan.download');
 
         // Manajemen Petugas (CRUD Akun Petugas)
         Route::get('/petugas', [UserController::class, 'index'])
